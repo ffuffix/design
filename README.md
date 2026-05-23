@@ -4,6 +4,9 @@
 
 # Snowball Design System
 
-See [design.md](design.md) for details on the design principles, components, and guidelines
+A minimalist, dark-themed design system built on Tailwind CSS.
 
-The design markdown file was mainly made to assist large language models in understanding the design system
+- **[design.md](design.md)** — principles, tokens, components, and the rules an agent or human should follow. Primarily written to give large language models a complete picture of the system in one read.
+
+#### Preview
+open `preview.html` in any modern browser.

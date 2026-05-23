@@ -15,10 +15,11 @@ This design system is built entirely on **Tailwind CSS**.
 When generating UI components or layouts using this design system, you **must** adhere to the following rules:
 1. **Dark Theme Default**: The background of the canvas or page must always be dark (e.g., `bg-black` or `bg-[#0a0a0a]`). Most text styles use semi-transparent white (`text-white/55`, `text-white/65`) which is invisible on light backgrounds.
 2. **Typography strictly Inter**: Ensure the parent element or body has `font-sans` (configured to Inter) applied.
-3. **No Arbitrary Colors**: Do not introduce random Tailwind colors (like `bg-blue-500` or `text-gray-300`). Stick strictly to the monochrome (white/black) palette, using only the canonical opacity steps below, plus the specific `red` accents for danger states.
-   - **Text opacity**: `/55` (muted), `/65` (link rest), `/80` (body), `/90` (near-primary), full white for primary. `/40` is reserved for de-emphasized spans inside hero titles.
-   - **Surface opacity**: `/[0.02]` (card / panel fill), `/[0.03]`–`/[0.04]` (hover fill, progress track), `/[0.06]`–`/[0.08]` (resting border via inset shadow), `/[0.14]`–`/[0.16]` (hover / active border).
-   - Do not invent intermediate values (`/70`, `/[0.05]`, `/[0.1]`). If a step seems missing, pick the nearest canonical one.
+3. **No Arbitrary Colors**: Do not introduce random Tailwind colors (like `bg-blue-500` or `text-gray-300`). Stick strictly to the monochrome (white/black) palette, using only the canonical opacity steps below, plus the documented `red` accents for danger / error and the success emerald (see *Success accent* in Foundation) for positive / confirmation states.
+   - **Text opacity**: `/35` (micro-label, footnote, table caption), `/40` (de-emphasized span inside a hero title), `/55` (muted), `/65` (link rest), `/80` (body), `/90` (near-primary), full white for primary.
+   - **Surface fill**: `/[0.01]` (faintest card fill — for cards sitting on a busy background like the dot-grid), `/[0.02]` (default card / panel fill), `/[0.03]`–`/[0.04]` (hover fill, progress track).
+   - **Border via inset shadow rgba**: `0.05`–`0.06` (quiet card hairline), `0.08` (default button / input hairline), `0.14`–`0.16` (hover / active hairline).
+   - Do not invent intermediate values (`/70`, `/[0.1]`, `0.18`). If a step seems missing, pick the nearest canonical one.
 4. **Touch Target Protection**: Interactive elements like buttons, checkboxes, and toggles use pseudo-elements for larger tap targets (`before:absolute before:-inset-2 before:content-['']`). Do not remove these classes.
 5. **Preserve Transitions**: Always include transition properties (`transition-colors`, `transition-all`, `duration-300`) to keep animations smooth.
 
@@ -31,7 +32,8 @@ When generating UI components or layouts using this design system, you **must** 
 - **Card / Container Background**: `bg-white/[0.02]` with border `border border-white/[0.08]`
 - **Text Primary**: `text-white` or `text-white/90`
 - **Text Secondary / Muted**: `text-white/55`
-- **Accents**: White, transparent white overlays, and soft red (`red-500`, `red-300`) for danger/error states.
+- **Accents**: White, transparent white overlays, soft red (`red-500`, `red-300`) for danger / error, and emerald (see *Success accent* below) for positive / confirmation states. Red and emerald are a **paired structural slot** — anywhere one appears (delta, status, badge), the other is the natural opposite.
+- **Success accent**: `text-emerald-400/90` (Tailwind's `emerald-400` resolves to `oklab(0.765 -0.169466 0.0510908)` — the same color, just expressed via the utility). Use for positive deltas, "copied to clipboard", build / sync success markers, and any state telling the user *something good just happened*. Do not pair this with neutral text in a single phrase — it should always carry meaning on its own (a label, a number, an icon).
 
 ### Tokens
 The same values recur across every component. Reach for these before inventing new ones.
@@ -40,9 +42,11 @@ The same values recur across every component. Reach for these before inventing n
 | :--- | :--- | :--- |
 | **Radius / small** | `rounded` | Tags, badges |
 | **Radius / control** | `rounded-[4px]` | Checkboxes |
-| **Radius / default** | `rounded-md` | Buttons, icon buttons, cards |
+| **Radius / button** | `rounded-md` | Buttons, icon buttons |
+| **Radius / card** | `rounded-xl` | Cards, panels, surface containers |
 | **Radius / pill** | `rounded-full` | Toggles, progress bars, avatars |
-| **Border / rest** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]` | Default 1px hairline |
+| **Border / card** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]` | Card hairline (use `0.05` for cards on busy backgrounds) |
+| **Border / rest** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]` | Default 1px hairline for buttons / inputs |
 | **Border / hover** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]` | Hover / active hairline |
 | **Border / danger rest** | `shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)]` | Danger button rest |
 | **Border / danger hover** | `shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]` | Danger button hover |
@@ -75,6 +79,8 @@ Use the following classes for text elements to maintain strict visual hierarchy.
 | **Paragraph / Body** | `text-base sm:text-lg max-w-xl leading-relaxed text-white/80` | Readable body paragraphs |
 | **Title Description** | `text-white/55 text-base sm:text-lg max-w-xl leading-relaxed` | Default subtitle, paired with H2 / H3. For hero H1 / Page Title pairings, use the larger variant in *Descriptions for Large Titles* below. |
 | **Muted Description** | `text-[13px] sm:text-sm leading-relaxed text-white/55 line-clamp-3` | Captions, card descriptions, small text |
+| **Metric Value** | `text-3xl font-medium tabular-nums leading-none text-white` | Large number inside a Stat Card |
+| **Metric Delta** | `text-[11px] tabular-nums` paired with `text-emerald-400/90` (positive) or `text-red-300/90` (negative) | Paired delta indicator below a Metric Value |
 | **Interactive Link** | `text-sm text-white/65 hover:text-white transition-colors duration-300` | Inline or navigation links |
 
 ---
@@ -91,6 +97,7 @@ Pick by **intent**, not by appearance. If a row matches what the user is trying 
 | Destructive / irreversible action (delete, reset, leave) | **Danger Button** |
 | Cancel, dismiss, "not now", low-emphasis navigation | **Ghost Button** |
 | Icon-only action in a toolbar or row (copy, close, edit) | **Icon Button** |
+| Single metric paired with a positive / negative delta | **Stat Card** |
 | Status, category, or metadata label (read-only) | **Tag / Badge** |
 | Boolean preference that takes effect immediately | **Toggle Switch** |
 | Multi-select, opt-in, or form agreement | **Checkbox Button** |
@@ -159,6 +166,33 @@ All buttons feature an invisible expanded click area using the `before:` pseudo-
 (This example uses a copy icon from the Lucide icon set, but you can replace it with any SVG icon.)
 ```html
 <button aria-label="Copy" class="inline-flex items-center justify-center w-9 h-9 rounded-md text-white/60 hover:text-white hover:bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition-all duration-300 relative before:absolute before:-inset-2 before:content-['']"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy w-3.5 h-3.5" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
+```
+
+### Cards
+
+#### Stat Card
+*One label, one number, one delta. The delta is the only place the success accent and red `red-300/90` appear as a pair — together they form a single bidirectional indicator (up vs. down, gained vs. lost, on-track vs. off-track). Never use the success accent here for a neutral or informational change — only when the direction of the delta is genuinely good.*
+
+*Uses the **card** radius (`rounded-xl`), the faintest **surface fill** (`/[0.01]`) since stat cards typically sit on the dot-grid background, and the quietest **card hairline** (`0.05`). The micro-label uses the `/35` text step.*
+```html
+<div class="
+  w-full max-w-[14rem] rounded-xl p-5 flex flex-col gap-1
+  bg-white/[0.01]
+  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]
+">
+  <span class="text-[10px] font-semibold uppercase tracking-widest text-white/35 whitespace-nowrap">
+    Revenue
+  </span>
+  <span class="text-3xl font-medium tabular-nums text-white leading-none mt-1">
+    $24.8k
+  </span>
+  <!-- Swap the delta color based on direction:    -->
+  <!--   positive → text-emerald-400/90            -->
+  <!--   negative → text-red-300/90                -->
+  <span class="text-[11px] tabular-nums mt-1 text-emerald-400/90">
+    +12.4%
+  </span>
+</div>
 ```
 
 ### Badges, Indicators & Progress

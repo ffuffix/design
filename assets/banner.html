@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Snowball — banner source</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../snowball.css" />
+  <style>
+    /* Banner scaffolding — render at 2400x800, screenshot per theme, then
+       composite the dark left half with the light right half. The layout is
+       identical in both themes, so the seam falls cleanly through the title. */
+    body { width: 2400px; height: 800px; overflow: hidden; position: relative; }
+    .hero {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      text-align: center;
+      pointer-events: none;
+    }
+    .col {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    .col.left  { left: 120px; top: 50%; transform: translateY(-50%); align-items: flex-start; }
+    .col.right { right: 120px; top: 50%; transform: translateY(-50%); align-items: flex-end; }
+    .cluster { display: flex; align-items: center; gap: 24px; }
+  </style>
+</head>
+<body class="dot-grid">
+
+  <div class="col left">
+    <statcard>
+      <statlabel>Revenue</statlabel>
+      <statvalue>$24.8k</statvalue>
+      <statdelta up>+12.4%</statdelta>
+    </statcard>
+    <div class="cluster">
+      <button role="switch" aria-checked="true" aria-label="Demo switch on"></button>
+      <button role="switch" aria-checked="false" aria-label="Demo switch off"></button>
+      <button role="checkbox" aria-checked="true" aria-label="Demo checkbox"></button>
+      <button role="radio" aria-checked="true" aria-label="Demo radio"></button>
+      <loadingspinner></loadingspinner>
+    </div>
+    <div class="cluster">
+      <button variant="primary">Get Started</button>
+      <button variant="danger">Delete</button>
+    </div>
+    <div class="cluster">
+      <tag>beta</tag>
+      <tag>v1.1.0</tag>
+      <progressbar style="--value: 60%; width: 200px;" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></progressbar>
+    </div>
+  </div>
+
+  <div class="hero">
+    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f407/512.gif" alt="" width="64" height="64" />
+    <span class="micro-label">Snowball Design System</span>
+    <div class="page-title">Snowball</div>
+    <p class="title-desc">Components, without the class soup. One stylesheet, both themes.</p>
+  </div>
+
+  <div class="col right">
+    <codeblock lang="js" style="width: 520px;">
+      <button copy aria-label="Copy code"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
+<pre><code><span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">sync</span><span class="token punctuation">(</span>project<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> res <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span><span class="token template-string">`/api/projects/${project.id}`</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// hydrate the cache</span>
+<span class="token punctuation">}</span></code></pre>
+    </codeblock>
+    <input type="text" value="Snowball" aria-label="Project name" style="width: 280px;" />
+    <div class="cluster">
+      <tag>@layer</tag>
+      <tag>light-dark()</tag>
+      <tag>base-select</tag>
+      <button variant="icon" aria-label="Copy">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>

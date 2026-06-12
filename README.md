@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f407/512.gif" alt="🐇" width="128" height="128">
+    <img src="assets/banner.png" alt="Snowball — split banner showing the same components in the dark theme on the left and the light theme on the right" width="100%">
 </p>
 
 # Snowball Design System

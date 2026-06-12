@@ -1,5 +1,5 @@
 /* ==========================================================================
-   🐇 Snowball 1.1.1 — user configuration
+   🐇 Snowball 1.2.0 — user configuration
    Load AFTER snowball.css:
 
      <link rel="stylesheet" href="snowball.css" />
@@ -13,10 +13,11 @@
 
    Three kinds of override:
      1. Theme  — snowball follows the OS color scheme by default. Force one
-        with an attribute on the root element:
-          <html data-theme="dark">   (always dark, the classic Snowball look)
-          <html data-theme="light">  (always light)
-        Tokens resolve at :root, so data-theme only works on <html>.
+        with an attribute:
+          <html data-theme="dark">     (whole page, the classic Snowball look)
+          <html data-theme="light">    (whole page, always light)
+          <section data-theme="dark">  (just this subtree — give it an opaque
+                                        background, e.g. background: var(--sb-bg))
      2. Global — uncomment a token below; every component follows. Colors
         are light-dark(light, dark) pairs picked by the active theme.
      3. Local  — set the un-prefixed property on one element:
@@ -52,7 +53,7 @@
      checked checkboxes/radios, the toggle-on track
      ------------------------------------------------------------------------ */
   /* --sb-bg:           light-dark(#fafafa, #000000); */
-  /* --sb-panel:        light-dark(#ffffff, #161616); */  /* popovers: select dropdowns */
+  /* --sb-panel:        light-dark(#ffffff, #0a0a0a); */  /* floating panels: dialogs, menus, tooltips, toasts, select dropdowns */
   /* --sb-solid:        light-dark(#171717, #ffffff); */
   /* --sb-solid-hover:  light-dark(rgba(23, 23, 23, 0.88), rgba(255, 255, 255, 0.9)); */
   /* --sb-solid-active: light-dark(rgba(23, 23, 23, 0.78), rgba(255, 255, 255, 0.8)); */

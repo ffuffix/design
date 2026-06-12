@@ -1,5 +1,5 @@
 /* ==========================================================================
-   🐇 Snowball 1.1.1 — component stylesheet
+   🐇 Snowball 1.2.0 — component stylesheet
    Standalone CSS implementation of design.md. No Tailwind required.
 
    Display-only components are custom tags:
@@ -7,6 +7,8 @@
      <tag>beta</tag>                     <card quiet?>…</card>
      <statcard> <statlabel/> <statvalue/> <statdelta up|down/> </statcard>
      <codeblock lang="ts"><pre><code>…</code></pre></codeblock>
+     <field> <label/> <input/> <fieldhint/> | <fielderror/> </field>
+     <toaster> <toast success|danger>…</toast> </toaster>
    Every custom tag has a hyphenated alias (loading-spinner, stat-card,
    sb-tag, sb-card, …) — use those in React/Vue so the tags are treated as
    custom elements instead of unknown HTML.
@@ -15,7 +17,11 @@
    screen-reader semantics can't be replicated on an unknown tag):
      <button variant="primary|secondary|danger|ghost|icon">
      <button role="switch|checkbox|radio" aria-checked="true|false">
-     <input type="text"> <textarea> <select> — styled with no class at all
+     <input type="text"> <textarea> <select> <input type="range">
+     <dialog> for modals; any [popover] renders as a panel (wire its
+     position per instance with CSS anchor positioning); tooltips come from
+     a data-tooltip attribute on any element that doesn't already use its
+     ::after (not switches, checkboxes, radios, or the copy button).
    Button state lives in aria-checked only, so toggling is one setAttribute
    call. Radio groups should be a single tab stop: the selected radio gets
    tabindex="0", the rest -1, and Arrow keys move both focus and selection —
@@ -32,10 +38,13 @@
    color appears only in diffs (inserted / deleted).
 
    Theming: every color is a light-dark() pair, so the system follows the
-   OS color scheme by default. Force a theme by putting data-theme="dark"
-   or data-theme="light" on <html> — tokens resolve at :root, so the
-   attribute only works there, not on subtrees. Browsers without
-   light-dark() (pre-2024) are not supported.
+   OS color scheme by default. Force a theme with data-theme="dark" or
+   data-theme="light" — on <html> for the whole page, or on any element to
+   theme just that subtree (tokens are re-declared on [data-theme] elements
+   so they re-resolve there). A themed subtree should paint its own opaque
+   background, e.g. style="background: var(--sb-bg)" — the translucent
+   fills assume it. Browsers without light-dark() (pre-2024) are not
+   supported.
 
    Overrides: the whole sheet lives in @layer snowball, so any unlayered
    consumer rule wins regardless of specificity — no !important needed.
@@ -63,7 +72,9 @@
 
 @layer snowball {
 
-:root {
+/* Tokens are also declared on [data-theme] elements so light-dark() pairs
+   re-resolve there — that's what makes subtree theming work */
+:root, [data-theme="light"], [data-theme="dark"] {
   color-scheme: light dark;
 
   /* Text opacity steps */
@@ -78,7 +89,7 @@
   /* Page background and the solid (inverted) surface — primary buttons,
      checked checkboxes/radios, the toggle-on track */
   --sb-bg:           light-dark(#fafafa, #000000);
-  --sb-panel:        light-dark(#ffffff, #161616);  /* popovers: select dropdowns */
+  --sb-panel:        light-dark(#ffffff, #0a0a0a);  /* floating panels: dialogs, menus, tooltips, toasts, select dropdowns */
   --sb-solid:        light-dark(#171717, #ffffff);
   --sb-solid-hover:  light-dark(rgba(23, 23, 23, 0.88), rgba(255, 255, 255, 0.9));
   --sb-solid-active: light-dark(rgba(23, 23, 23, 0.78), rgba(255, 255, 255, 0.8));
@@ -119,13 +130,13 @@
     'Cascadia Code', Menlo, Consolas, monospace;
 }
 
-/* Forced theme — set on <html>; tokens resolve at :root only */
-:root[data-theme="light"] { color-scheme: light; }
-:root[data-theme="dark"]  { color-scheme: dark; }
+/* Forced theme — on <html> for the page, on any element for a subtree */
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"]  { color-scheme: dark; }
 
 /* Canonical dark success accent from design.md; the rgb() above is the fallback */
 @supports (color: oklab(0.7 0 0)) {
-  :root {
+  :root, [data-theme="light"], [data-theme="dark"] {
     --sb-success: light-dark(rgb(5 150 105 / 0.95), oklab(0.765 -0.169466 0.0510908 / 0.9));
   }
 }
@@ -567,6 +578,87 @@ button[role="radio"][aria-checked="true"]::after {
   }
 }
 
+/* Slider — <input type="range">; progress-bar track, solid thumb ----------- */
+:where(input[type="range"]) {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  max-width: 20rem;
+  height: 1.25rem;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+:where(input[type="range"])::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-fill-track);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.02));
+}
+:where(input[type="range"])::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: -6px;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-solid);
+  box-shadow: 0 2px 6px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.4));
+  transition: transform 0.2s;
+}
+:where(input[type="range"]):active::-webkit-slider-thumb { transform: scale(0.9); }
+:where(input[type="range"])::-moz-range-track {
+  height: 4px;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-fill-track);
+}
+:where(input[type="range"])::-moz-range-progress {
+  height: 4px;
+  border-radius: var(--sb-radius-pill);
+  background: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.7));
+}
+:where(input[type="range"])::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 0;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-solid);
+  box-shadow: 0 2px 6px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.4));
+  transition: transform 0.2s;
+}
+:where(input[type="range"]):active::-moz-range-thumb { transform: scale(0.9); }
+:where(input[type="range"]):focus-visible {
+  outline: 2px solid light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.35));
+  outline-offset: 2px;
+}
+
+/* Field — <field> <label/> <input/> <fieldhint/> | <fielderror/> </field> -- */
+field, sb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 20rem;
+}
+field > label, sb-field > label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--sb-text-muted);
+}
+fieldhint, field-hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sb-text-micro);
+}
+fielderror, field-error {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sb-danger-text);
+}
+
 /* Loading Spinner ------------------------------------------------------------
    Default 1.25rem; any size via style="--size: 48px". The dash cycle needs
    @property; engines without it fall back to a fixed rotating arc. */
@@ -866,6 +958,195 @@ codeblock[lang]::before, code-block[lang]::before {
   color: var(--sb-text-strong);
 }
 
+/* Overlays --------------------------------------------------------------------
+   One surface, four shapes: the --sb-panel floating panel with a strong
+   hairline border and a soft drop shadow — the same language the select
+   dropdown established. Entrance/exit motion is gated behind
+   prefers-reduced-motion: no-preference at the end of this section. */
+
+/* Dialog — native <dialog>, opened with showModal() */
+:where(dialog) {
+  width: fit-content;
+  min-width: 16rem;
+  max-width: min(28rem, calc(100vw - 2.5rem));
+  padding: 1.5rem;
+  border: var(--border, var(--sb-border-width)) solid var(--sb-line-strong);
+  border-radius: var(--radius, var(--sb-radius-card));
+  background: var(--sb-panel);
+  color: var(--sb-text-body);
+  box-shadow: 0 24px 64px light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.6));
+}
+:where(dialog)::backdrop {
+  background: light-dark(rgba(250, 250, 250, 0.55), rgba(0, 0, 0, 0.55));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+:where(dialog) > h3 { font-size: 1.125rem; font-weight: 600; }
+:where(dialog) > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 0;
+}
+
+/* Popover panel — any [popover] gets the surface; position each instance
+   with CSS anchor positioning (anchor-name on the trigger, position-anchor
+   + anchor() on the panel). Without anchor support the browser centers it. */
+:where([popover]) {
+  padding: 0.25rem;
+  border: var(--border, var(--sb-border-width)) solid var(--sb-line-strong);
+  border-radius: 0.5rem;
+  background: var(--sb-panel);
+  color: var(--sb-text-body);
+  box-shadow: 0 8px 24px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.5));
+}
+/* Menu items — buttons inside a popover become quiet full-width rows.
+   The expanded tap target is neutralized here: it would overflow the
+   popover's auto-scrolling box and spawn scrollbars, and menu rows are
+   already comfortable targets. */
+:where([popover]) > button {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--sb-radius-button);
+  color: var(--sb-text-muted);
+  box-shadow: none;
+  transition: color 0.2s, background-color 0.2s;
+}
+:where([popover]) > button::before { inset: 0; }
+:where([popover]) > button:hover {
+  color: var(--sb-text);
+  background: var(--sb-fill-track);
+  box-shadow: none;
+}
+/* Outranks the standalone danger-button hairline — menu rows stay quiet */
+[popover] > button[variant="danger"] {
+  color: var(--sb-danger-text);
+  box-shadow: none;
+}
+[popover] > button[variant="danger"]:hover {
+  color: var(--sb-danger-hover);
+  background: var(--sb-danger-fill);
+  box-shadow: none;
+}
+:where([popover]) > hr { margin: 0.25rem 0.5rem; }
+
+/* Tooltip — data-tooltip on any element that doesn't already use its
+   ::after (not switches, checkboxes, radios, or the code-block copy button) */
+:where([data-tooltip]) { position: relative; }
+:where([data-tooltip])::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  padding: 4px 8px;
+  border: var(--border, var(--sb-border-width)) solid var(--sb-line-strong);
+  border-radius: var(--sb-radius);
+  background: var(--sb-panel);
+  font-family: var(--sb-font);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--sb-text-body);
+  box-shadow: 0 4px 12px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4));
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 2px);
+  z-index: 10;
+}
+:where([data-tooltip]):hover::after,
+:where([data-tooltip]):focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Toast — <toaster aria-live="polite"> holds the stack; JS appends
+   <toast success|danger>…</toast> and removes it after a beat */
+toaster, sb-toaster {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  z-index: 50;
+}
+toast, sb-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border: var(--border, var(--sb-border-width)) solid var(--sb-line-strong);
+  border-radius: var(--radius, var(--sb-radius-button));
+  background: var(--sb-panel);
+  font-size: 13px;
+  color: var(--sb-text-body);
+  box-shadow: 0 8px 24px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.5));
+}
+toast::before, sb-toast::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-text-dim);
+}
+toast[success]::before, sb-toast[success]::before { background: var(--sb-success); }
+toast[danger]::before,  sb-toast[danger]::before  { background: var(--sb-danger); }
+/* Set the closing attribute, then remove the element after ~200ms */
+toast[closing], sb-toast[closing] {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* Overlay motion — fade/slide everything in; discrete display/overlay
+   transitions let dialogs and popovers animate from display:none */
+@media (prefers-reduced-motion: no-preference) {
+  :where(dialog) {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition: opacity 0.2s, transform 0.2s,
+      display 0.2s allow-discrete, overlay 0.2s allow-discrete;
+  }
+  :where(dialog[open]) { opacity: 1; transform: none; }
+  @starting-style {
+    :where(dialog[open]) { opacity: 0; transform: translateY(8px) scale(0.98); }
+  }
+  :where(dialog)::backdrop {
+    opacity: 0;
+    transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
+  }
+  :where(dialog[open])::backdrop { opacity: 1; }
+  @starting-style {
+    :where(dialog[open])::backdrop { opacity: 0; }
+  }
+
+  :where([popover]) {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.15s, transform 0.15s,
+      display 0.15s allow-discrete, overlay 0.15s allow-discrete;
+  }
+  :where(:popover-open) { opacity: 1; transform: none; }
+  @starting-style {
+    :where(:popover-open) { opacity: 0; transform: translateY(-4px); }
+  }
+
+  /* Tooltips wait a beat before appearing; hiding is immediate */
+  :where([data-tooltip])::after { transition: opacity 0.15s, transform 0.15s; }
+  :where([data-tooltip]):hover::after,
+  :where([data-tooltip]):focus-visible::after { transition-delay: 0.3s; }
+
+  toast, sb-toast { transition: opacity 0.2s, transform 0.2s; }
+  @starting-style {
+    toast, sb-toast { opacity: 0; transform: translateY(6px); }
+  }
+}
+
 /* Utilities --------------------------------------------------------------------------- */
 .dot-grid {
   background-image: radial-gradient(light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08)) 1px, transparent 1px);
@@ -881,6 +1162,10 @@ codeblock[lang]::before, code-block[lang]::before {
   progressbar::after, progress-bar::after {
     transition-duration: 0.01ms !important;
   }
+  /* Vendor pseudos kept in separate rules — an unknown selector would
+     invalidate everything else sharing its rule */
+  input[type="range"]::-webkit-slider-thumb { transition-duration: 0.01ms !important; }
+  input[type="range"]::-moz-range-thumb { transition-duration: 0.01ms !important; }
   loadingspinner::after, loading-spinner::after {
     animation: sb-spin 2s linear infinite;
   }

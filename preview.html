@@ -318,11 +318,63 @@
         <div class="flex flex-wrap items-start gap-4">
           <textarea placeholder="Describe the change…" class="w-full max-w-72 min-h-18 resize-y px-3.5 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]"></textarea>
           <select aria-label="Environment" class="w-full max-w-56 appearance-none cursor-pointer pl-3.5 pr-9 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] bg-no-repeat bg-[right_0.75rem_center] bg-[length:0.875rem] bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27none%27%20stroke=%27%23888888%27%20stroke-width=%272%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27m6%209%206%206%206-6%27/%3E%3C/svg%3E')]">
-            <option class="bg-neutral-900 text-white/80">Production</option>
-            <option class="bg-neutral-900 text-white/80">Staging</option>
-            <option class="bg-neutral-900 text-white/80">Development</option>
+            <option class="bg-neutral-950 text-white/80">Production</option>
+            <option class="bg-neutral-950 text-white/80">Staging</option>
+            <option class="bg-neutral-950 text-white/80">Development</option>
           </select>
         </div>
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Slider</p>
+        <input type="range" min="0" max="100" value="60" aria-label="Volume" class="w-full max-w-56 h-5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/[0.04] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:-mt-1.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.4)] [&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/[0.04] [&::-moz-range-progress]:h-1 [&::-moz-range-progress]:rounded-full [&::-moz-range-progress]:bg-white/70 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.4)]" />
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Field — label / control / hint</p>
+        <div class="flex flex-col gap-2 w-full max-w-56">
+          <label for="pv-project" class="text-[10px] font-semibold uppercase tracking-widest text-white/55">Project name</label>
+          <input id="pv-project" type="text" placeholder="my-project" aria-describedby="pv-project-hint" class="w-full px-3.5 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]" />
+          <p id="pv-project-hint" class="text-xs leading-normal text-white/35">Lowercase letters and dashes only.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-white/[0.06] max-w-5xl mx-auto" />
+
+  <!-- ===== Overlays ===== -->
+  <section class="max-w-5xl mx-auto px-6 sm:px-10 py-20">
+    <h2 class="text-4xl sm:text-5xl font-semibold tracking-tight text-white mb-2">Overlays</h2>
+    <p class="text-white/55 text-base sm:text-lg max-w-xl leading-relaxed mb-12">
+      One panel surface, four shapes. The menu needs CSS anchor positioning — see design.md and components.html for that one.
+    </p>
+
+    <div class="grid sm:grid-cols-2 gap-y-10 gap-x-12">
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Dialog — native showModal()</p>
+        <button id="pv-dialog-open" class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:text-white hover:bg-white/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition-all duration-300 relative before:absolute before:-inset-2 before:content-['']">Delete project…</button>
+        <dialog id="pv-dialog" class="m-auto w-[min(28rem,calc(100vw-2.5rem))] p-6 rounded-xl bg-neutral-950 text-white/80 border border-white/[0.16] shadow-[0_24px_64px_rgba(0,0,0,0.6)] backdrop:bg-black/55 backdrop:backdrop-blur-md">
+          <h3 class="text-lg font-semibold text-white">Delete project?</h3>
+          <p class="text-sm text-white/55 leading-relaxed mt-2">This permanently removes the project and all of its data.</p>
+          <footer class="flex justify-end gap-3 mt-6">
+            <form method="dialog"><button class="px-3 py-1.5 rounded-md text-[13px] font-medium text-white/55 hover:text-white hover:bg-white/[0.03] transition-colors duration-200 relative before:absolute before:-inset-2 before:content-['']">Cancel</button></form>
+            <button id="pv-dialog-confirm" class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium text-red-300/90 shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)] hover:text-red-200 hover:bg-red-500/[0.06] hover:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)] transition-all duration-300 relative before:absolute before:-inset-2 before:content-['']">Delete</button>
+          </footer>
+        </dialog>
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Tooltip — hover or focus, after a beat</p>
+        <button aria-label="Copy" data-tooltip="Copy to clipboard" class="relative inline-flex w-9 h-9 items-center justify-center rounded-md text-white/60 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:text-white hover:bg-white/[0.04] transition-colors duration-200 after:content-[attr(data-tooltip)] after:absolute after:bottom-[calc(100%+0.5rem)] after:left-1/2 after:-translate-x-1/2 after:px-2 after:py-1 after:rounded after:bg-neutral-950 after:border after:border-white/[0.16] after:text-[11px] after:font-medium after:text-white/80 after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity hover:after:opacity-100 hover:after:delay-300 focus-visible:after:opacity-100">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+        </button>
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Toast — aria-live stack, auto-dismiss</p>
+        <button id="pv-toast-btn" class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:text-white hover:bg-white/[0.02] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition-all duration-300 relative before:absolute before:-inset-2 before:content-['']">Save</button>
+        <div id="pv-toaster" aria-live="polite" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2"></div>
       </div>
     </div>
   </section>
@@ -431,6 +483,23 @@
         if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   j = (i - 1 + radios.length) % radios.length;
         if (j !== null) { e.preventDefault(); select(radios[j]); }
       });
+    });
+
+    // Overlays: dialog wiring and a minimal toast factory.
+    const pvDialog = document.getElementById('pv-dialog');
+    document.getElementById('pv-dialog-open').addEventListener('click', () => pvDialog.showModal());
+    document.getElementById('pv-dialog-confirm').addEventListener('click', () => pvDialog.close());
+
+    const pvToaster = document.getElementById('pv-toaster');
+    document.getElementById('pv-toast-btn').addEventListener('click', () => {
+      const t = document.createElement('div');
+      t.className = 'flex items-center gap-2.5 px-3.5 py-2.5 rounded-md bg-neutral-950 text-[13px] text-white/80 border border-white/[0.16] shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-all duration-200';
+      t.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400/90"></span>Project saved';
+      pvToaster.append(t);
+      setTimeout(() => {
+        t.classList.add('opacity-0', 'translate-y-1');
+        setTimeout(() => t.remove(), 200);
+      }, 4000);
     });
 
     // Code block copy buttons: write the clipboard, then swap the copy icon

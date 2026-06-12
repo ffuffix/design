@@ -55,7 +55,7 @@ The same values recur across every component. Reach for these before inventing n
 | **Transition / all** | `transition-all duration-300` | When border / shadow / position also animates |
 
 ### Flexibility
-This document specifies the canonical dark theme. snowball.css implements every color as a `light-dark()` pair, follows the OS color scheme by default, and supports forcing a theme with `data-theme="dark"` (the classic Snowball look) or `data-theme="light"` on `<html>`; it also honors `prefers-reduced-motion` and lives in `@layer snowball`, so any unlayered consumer rule overrides it. The Tailwind reference markup in this file is dark-only.
+This document specifies the canonical dark theme. snowball.css implements every color as a `light-dark()` pair, follows the OS color scheme by default, and supports forcing a theme with `data-theme="dark"` (the classic Snowball look) or `data-theme="light"` — on `<html>` for the whole page, or on any element to theme just that subtree (give a themed subtree an opaque background, e.g. `background: var(--sb-bg)`; the translucent fills assume it). It also honors `prefers-reduced-motion` and lives in `@layer snowball`, so any unlayered consumer rule overrides it. The Tailwind reference markup in this file is dark-only.
 
 Corner radius and border (hairline) width are the two shape knobs a consumer may adjust — swap the radius token for another canonical step, or thicken the hairline (in Tailwind, change the inset-shadow spread, e.g. `shadow-[inset_0_0_0_2px_…]`; because hairlines are inset shadows, this never changes a component's outer size). In snowball.css both knobs work per element (`style="--radius: 4px; --border: 2px"` on any surface) and globally (`--sb-radius-*`, `--sb-border-width`); `snowball.config.css` lists every global token at its default, ready to uncomment. Everything else about a component's geometry — its size, padding, and proportions — is fixed: do not stretch, shrink, or re-space components to fit a layout; adjust the layout instead.
 
@@ -110,9 +110,15 @@ Pick by **intent**, not by appearance. If a row matches what the user is trying 
 | Free-form text entry, single line | **Text Input** |
 | Free-form text entry, multi-line | **Textarea** |
 | Pick one option from a long or unfamiliar list | **Select** |
+| Pick a numeric value from a continuous range | **Slider** |
+| Label + input + hint or error, stacked | **Field** |
 | Indeterminate in-progress state | **Loading Spinner** |
 | Determinate progress with a known percentage | **Progress Bar** |
 | Source code, config snippets, or terminal output | **Code Block** |
+| Blocking decision or focused task that interrupts the page | **Dialog** |
+| Secondary actions tucked behind a trigger | **Menu (Popover)** |
+| Clarify an icon-only or ambiguous control on hover / focus | **Tooltip** |
+| Transient, non-blocking feedback after an action | **Toast** |
 
 ### Buttons
 All buttons feature an invisible expanded click area using the `before:` pseudo-element for accessibility.
@@ -380,10 +386,88 @@ Every control needs an accessible name — a visible `<label>`, `aria-label`, or
   bg-no-repeat bg-[right_0.75rem_center] bg-[length:0.875rem]
   bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27none%27%20stroke=%27%23888888%27%20stroke-width=%272%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27m6%209%206%206%206-6%27/%3E%3C/svg%3E')]
 ">
-  <option class="bg-neutral-900 text-white/80">Production</option>
-  <option class="bg-neutral-900 text-white/80">Staging</option>
+  <option class="bg-neutral-950 text-white/80">Production</option>
+  <option class="bg-neutral-950 text-white/80">Staging</option>
 </select>
 ```
+
+#### Slider
+*A native `<input type="range">` that reuses the progress-bar language: 4px pill track on the track fill, with a solid 1rem thumb (the inverted surface, like the primary button). The thumb compresses slightly while dragged, mirroring the checkbox's `:active` scale.*
+```html
+<input type="range" min="0" max="100" value="60" class="
+  w-full max-w-xs h-5 appearance-none bg-transparent cursor-pointer
+  [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/[0.04]
+  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:-mt-1.5
+  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.4)]
+  active:[&::-webkit-slider-thumb]:scale-90 [&::-webkit-slider-thumb]:transition-transform
+" />
+```
+*(Duplicate the track/thumb rules for `::-moz-range-track` / `::-moz-range-thumb`; Firefox also supports `::-moz-range-progress` for a filled lead segment.)*
+
+#### Field
+*The stacking pattern for forms: micro-label, then the control, then a hint — or an error when `aria-invalid` is set. Always link hint/error text with `aria-describedby`.*
+```html
+<div class="flex flex-col gap-2 w-full max-w-xs">
+  <label for="project" class="text-[10px] font-semibold uppercase tracking-widest text-white/55">Project name</label>
+  <input id="project" type="text" aria-describedby="project-hint" class="…text input classes…" />
+  <p id="project-hint" class="text-xs leading-normal text-white/35">Lowercase letters and dashes only.</p>
+</div>
+```
+*In snowball.css this is `<field> <label/> <input/> <fieldhint/> </field>`, swapping `<fieldhint>` for `<fielderror>` on failure.*
+
+### Overlays
+One surface, four shapes: a floating panel (solid `bg-neutral-950`, strong hairline border, soft drop shadow) — the same language the select dropdown uses. All overlay motion is a short fade/slide and must be gated behind `prefers-reduced-motion: no-preference`.
+
+#### Dialog
+*A native `<dialog>` opened with `showModal()` — focus trapping, Esc, and `method="dialog"` close come free. The backdrop dims and blurs the page.*
+```html
+<dialog class="m-auto w-[min(28rem,calc(100vw-2.5rem))] p-6 rounded-xl bg-neutral-950 text-white/80
+  border border-white/[0.16] shadow-[0_24px_64px_rgba(0,0,0,0.6)]
+  backdrop:bg-black/55 backdrop:backdrop-blur-md">
+  <h3 class="text-lg font-semibold text-white">Delete project?</h3>
+  <p class="text-sm text-white/55 leading-relaxed mt-2 max-w-none">This permanently removes the project and all of its data.</p>
+  <footer class="flex justify-end gap-3 mt-6">
+    <form method="dialog"><button class="…ghost button…">Cancel</button></form>
+    <button class="…danger button…">Delete</button>
+  </footer>
+</dialog>
+```
+
+#### Menu (Popover)
+*The `popover` attribute provides open/close, light-dismiss, and the top layer; CSS anchor positioning pins the panel to its trigger (`anchor-name` on the trigger, `position-anchor` + `anchor()` on the panel). Where anchor positioning is unsupported the panel centers — acceptable as a fallback, ship JS positioning if the menu is critical. Items are quiet full-width rows; a danger item uses the danger text/fill pair.*
+```html
+<button popovertarget="project-menu" style="anchor-name: --project-menu">Options</button>
+<menu id="project-menu" popover class="m-0 p-1 rounded-lg bg-neutral-950 border border-white/[0.16] shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+  style="position-anchor: --project-menu; inset: auto; top: calc(anchor(bottom) + 4px); left: anchor(left);">
+  <button class="w-full justify-start px-3 py-1.5 rounded-md text-white/55 hover:text-white hover:bg-white/[0.04] transition-colors duration-200">Rename</button>
+  <button class="w-full justify-start px-3 py-1.5 rounded-md text-white/55 hover:text-white hover:bg-white/[0.04] transition-colors duration-200">Duplicate</button>
+  <hr class="my-1 mx-2 border-white/[0.06]" />
+  <button class="w-full justify-start px-3 py-1.5 rounded-md text-red-300/90 hover:text-red-200 hover:bg-red-500/[0.06] transition-colors duration-200">Delete</button>
+</menu>
+```
+
+#### Tooltip
+*For clarifying icon-only or ambiguous controls — never for content that matters, since it's hover/focus-only. Micro panel, 11px text, appears after a ~300ms delay, hides immediately. In snowball.css it's a `data-tooltip` attribute on any element that doesn't already use its `::after` (not switches, checkboxes, radios, or the code-block copy button). The tooltip is not the accessible name — keep `aria-label` even when the tooltip repeats it.*
+```html
+<button aria-label="Copy" data-tooltip="Copy to clipboard" class="relative …icon button classes…
+  after:content-[attr(data-tooltip)] after:absolute after:bottom-[calc(100%+0.5rem)] after:left-1/2 after:-translate-x-1/2
+  after:px-2 after:py-1 after:rounded after:bg-neutral-950 after:border after:border-white/[0.16]
+  after:text-[11px] after:font-medium after:text-white/80 after:whitespace-nowrap after:pointer-events-none
+  after:opacity-0 after:transition-opacity hover:after:opacity-100 hover:after:delay-300 focus-visible:after:opacity-100">…icon…</button>
+```
+
+#### Toast
+*Transient, non-blocking confirmation — bottom-right stack inside an `aria-live="polite"` container so screen readers announce additions. A 6px status dot is the only color: muted by default, the success / danger pair otherwise. Auto-dismiss after ~4s; fade out before removing.*
+```html
+<div aria-live="polite" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+  <div class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-md bg-neutral-950 text-[13px] text-white/80
+    border border-white/[0.16] shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
+    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400/90"></span>
+    Project saved
+  </div>
+</div>
+```
+*In snowball.css: `<toaster aria-live="polite">` holds the stack; append `<toast success|danger>message</toast>`, then set the `closing` attribute and remove the element ~200ms later.*
 
 
 

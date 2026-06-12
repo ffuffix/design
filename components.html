@@ -10,8 +10,10 @@
   <link rel="stylesheet" href="snowball.css" />
   <link rel="stylesheet" href="snowball.config.css" />
   <style>
-    /* Demo-page scaffolding only — not part of the design system */
-    section, header, footer { max-width: 64rem; margin: 0 auto; padding: 5rem 2.5rem; }
+    /* Demo-page scaffolding only — not part of the design system.
+       Scoped to body's direct children so it can't leak into component
+       internals (the dialog has its own <footer>). */
+    body > section, body > header, body > footer { max-width: 64rem; margin: 0 auto; padding: 5rem 2.5rem; }
     hr { max-width: 64rem; margin: 0 auto; }
     .row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; }
     .stack { display: flex; flex-direction: column; gap: 2.5rem; }
@@ -21,7 +23,7 @@
 <body>
 
   <header>
-    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.1.1 · snowball.css</p>
+    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.2.0 · snowball.css</p>
     <h1>Components,<br>without the class soup.</h1>
     <p class="hero-desc" style="margin-top: 2rem;">
       Every component from <a href="design.md">design.md</a> as a semantic tag or a one-attribute
@@ -87,7 +89,7 @@
         <span class="micro-label">Tag / Badge</span>
         <div class="row" style="gap: 0.75rem;">
           <tag>beta</tag>
-          <tag>v1.1.0</tag>
+          <tag>v1.2.0</tag>
           <tag>draft</tag>
         </div>
       </div>
@@ -165,6 +167,25 @@
           </select>
         </div>
       </div>
+      <div>
+        <span class="micro-label">Slider</span>
+        <input type="range" min="0" max="100" value="60" aria-label="Volume" />
+      </div>
+      <div>
+        <span class="micro-label">Field — label / control / hint or error</span>
+        <div class="row" style="align-items: flex-start;">
+          <field>
+            <label for="f-name">Project name</label>
+            <input id="f-name" type="text" placeholder="my-project" aria-describedby="f-name-hint" />
+            <fieldhint id="f-name-hint">Lowercase letters and dashes only.</fieldhint>
+          </field>
+          <field>
+            <label for="f-email">Email</label>
+            <input id="f-email" type="email" value="not-an-email" aria-invalid="true" aria-describedby="f-email-err" />
+            <fielderror id="f-email-err">Enter a valid email address.</fielderror>
+          </field>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -218,6 +239,59 @@
   <hr />
 
   <section>
+    <h2 style="margin-bottom: 0.5rem;">Overlays</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      One panel surface, four shapes — <code>&lt;dialog&gt;</code>, <code>[popover]</code> menus,
+      <code>data-tooltip</code>, and <code>&lt;toast&gt;</code>.
+    </p>
+    <div class="stack">
+      <div>
+        <span class="micro-label">Dialog — native <code>showModal()</code>; Esc and <code>method="dialog"</code> close it</span>
+        <button onclick="document.getElementById('demo-dialog').showModal()">Delete project…</button>
+        <dialog id="demo-dialog">
+          <h3>Delete project?</h3>
+          <p class="muted-desc" style="margin-top: 0.5rem;">
+            This permanently removes the project and all of its data.
+          </p>
+          <footer>
+            <form method="dialog"><button variant="ghost">Cancel</button></form>
+            <button variant="danger" onclick="document.getElementById('demo-dialog').close(); toast('Project deleted', 'danger')">Delete</button>
+          </footer>
+        </dialog>
+      </div>
+      <div>
+        <span class="micro-label">Menu — <code>popover</code> + anchor positioning (centers where unsupported)</span>
+        <button popovertarget="demo-menu" style="anchor-name: --demo-menu">Options</button>
+        <menu id="demo-menu" popover style="position-anchor: --demo-menu; inset: auto; margin: 0; top: calc(anchor(bottom) + 4px); left: anchor(left); min-width: 11rem; list-style: none;">
+          <button>Rename</button>
+          <button>Duplicate</button>
+          <hr />
+          <button variant="danger">Delete</button>
+        </menu>
+      </div>
+      <div>
+        <span class="micro-label">Tooltip — <code>data-tooltip</code>, appears after a beat on hover or focus</span>
+        <div class="row">
+          <button variant="icon" aria-label="Copy" data-tooltip="Copy to clipboard">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+          </button>
+          <button variant="ghost" data-tooltip="Discards unsaved changes">Cancel</button>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Toast — transient feedback in an <code>aria-live</code> stack</span>
+        <div class="row">
+          <button onclick="toast('Project saved', 'success')">Save</button>
+          <button onclick="toast('Connection lost', 'danger')">Fail</button>
+          <button onclick="toast('Copied to clipboard')">Neutral</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
     <h2 style="margin-bottom: 0.5rem;">Flexibility</h2>
     <p class="title-desc" style="margin-bottom: 3rem;">
       Every surface honors local <code>--radius</code> and <code>--border</code> overrides;
@@ -249,11 +323,25 @@
         </div>
       </div>
       <div>
-        <span class="micro-label">Theme — data-theme on &lt;html&gt; · default follows the OS</span>
+        <span class="micro-label">Theme — data-theme on &lt;html&gt; or any subtree · default follows the OS</span>
         <div class="row">
           <button onclick="document.documentElement.removeAttribute('data-theme')">Auto</button>
           <button onclick="document.documentElement.setAttribute('data-theme', 'light')">Force light</button>
           <button onclick="document.documentElement.setAttribute('data-theme', 'dark')">Force dark</button>
+          <card data-theme="light" style="background: var(--sb-bg); max-width: 16rem;">
+            <span class="micro-label" style="margin: 0 0 0.75rem;">subtree · data-theme="light"</span>
+            <div class="row" style="gap: 0.75rem;">
+              <button variant="primary">Always light</button>
+              <button role="switch" aria-checked="true" aria-label="Subtree demo switch"></button>
+            </div>
+          </card>
+          <card data-theme="dark" style="background: var(--sb-bg); max-width: 16rem;">
+            <span class="micro-label" style="margin: 0 0 0.75rem;">subtree · data-theme="dark"</span>
+            <div class="row" style="gap: 0.75rem;">
+              <button variant="primary">Always dark</button>
+              <button role="switch" aria-checked="true" aria-label="Subtree demo switch"></button>
+            </div>
+          </card>
         </div>
       </div>
     </div>
@@ -263,7 +351,22 @@
     <p class="muted-desc">Snowball Design System — snowball.css</p>
   </footer>
 
+  <toaster aria-live="polite"></toaster>
+
   <script>
+    // Toasts: append to the stack, auto-dismiss after 4s; the closing
+    // attribute drives the fade-out before removal.
+    window.toast = (message, kind) => {
+      const t = document.createElement('toast');
+      if (kind) t.setAttribute(kind, '');
+      t.textContent = message;
+      document.querySelector('toaster').append(t);
+      setTimeout(() => {
+        t.setAttribute('closing', '');
+        setTimeout(() => t.remove(), 200);
+      }, 4000);
+    };
+
     // The entire interactivity layer: flip aria-checked, CSS does the rest.
     document.querySelectorAll('[role="switch"], [role="checkbox"]').forEach(btn =>
       btn.addEventListener('click', () =>

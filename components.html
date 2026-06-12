@@ -21,7 +21,7 @@
 <body>
 
   <header>
-    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.1.0 · snowball.css</p>
+    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.1.1 · snowball.css</p>
     <h1>Components,<br>without the class soup.</h1>
     <p class="hero-desc" style="margin-top: 2rem;">
       Every component from <a href="design.md">design.md</a> as a semantic tag or a one-attribute
@@ -302,8 +302,12 @@
       btn.addEventListener('click', () =>
         navigator.clipboard.writeText(block.querySelector('pre').innerText).then(() => {
           btn.setAttribute('data-copied', '');
+          btn.setAttribute('aria-label', 'Copied');
           clearTimeout(btn._copiedTimer);
-          btn._copiedTimer = setTimeout(() => btn.removeAttribute('data-copied'), 1500);
+          btn._copiedTimer = setTimeout(() => {
+            btn.removeAttribute('data-copied');
+            btn.setAttribute('aria-label', 'Copy code');
+          }, 1500);
         }));
       block.prepend(btn);
     });

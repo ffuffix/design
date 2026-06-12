@@ -441,10 +441,12 @@
         navigator.clipboard.writeText(btn.parentElement.querySelector('pre').innerText).then(() => {
           copyIcon.classList.add('scale-0', 'opacity-0');
           checkIcon.classList.replace('scale-0', 'scale-100');
+          btn.setAttribute('aria-label', 'Copied');
           clearTimeout(btn._copiedTimer);
           btn._copiedTimer = setTimeout(() => {
             copyIcon.classList.remove('scale-0', 'opacity-0');
             checkIcon.classList.replace('scale-100', 'scale-0');
+            btn.setAttribute('aria-label', 'Copy code');
           }, 1500);
         }));
     });

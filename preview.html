@@ -216,6 +216,36 @@
 
   <hr class="border-white/[0.06] max-w-5xl mx-auto" />
 
+  <!-- ===== Code Block ===== -->
+  <section class="max-w-5xl mx-auto px-6 sm:px-10 py-20">
+    <h2 class="text-4xl sm:text-5xl font-semibold tracking-tight text-white mb-2">Code Block</h2>
+    <p class="text-white/55 text-base sm:text-lg max-w-xl leading-relaxed mb-12">
+      Monochrome token hierarchy — opacity and weight, not color. Diff lines are the only colored tokens.
+      A copy-to-clipboard button is part of the default anatomy; omit it where copying makes no sense, as the diff sample does.
+    </p>
+
+    <div class="relative rounded-xl bg-white/[0.02] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden max-w-xl">
+      <span class="absolute top-3 right-11 text-[10px] font-semibold uppercase tracking-widest text-white/35 select-none">js</span>
+      <button data-copy aria-label="Copy code" class="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors duration-200 hover:text-white hover:bg-white/[0.04] before:absolute before:-inset-2 before:content-['']">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 transition-all duration-200" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 absolute text-white scale-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+      </button>
+      <pre class="m-0 px-5 py-4 overflow-x-auto font-mono text-[13px] leading-[1.7] text-white/80"><code><span class="text-white font-medium">async</span> <span class="text-white font-medium">function</span> <span class="text-white/90">sync</span><span class="text-white/40">(</span>project<span class="text-white/40">)</span> <span class="text-white/40">{</span>
+  <span class="text-white font-medium">const</span> res <span class="text-white/40">=</span> <span class="text-white font-medium">await</span> <span class="text-white/90">fetch</span><span class="text-white/40">(</span><span class="text-white/65">`/api/projects/${project.id}`</span><span class="text-white/40">)</span><span class="text-white/40">;</span>
+  <span class="text-white font-medium">if</span> <span class="text-white/40">(</span><span class="text-white/40">!</span>res<span class="text-white/40">.</span><span class="text-white/55">ok</span><span class="text-white/40">)</span> <span class="text-white font-medium">throw</span> <span class="text-white font-medium">new</span> <span class="text-white/90">Error</span><span class="text-white/40">(</span><span class="text-white/65">"sync failed"</span><span class="text-white/40">)</span><span class="text-white/40">;</span>
+  <span class="text-white font-medium">return</span> res<span class="text-white/40">.</span><span class="text-white/90">json</span><span class="text-white/40">(</span><span class="text-white/40">)</span><span class="text-white/40">;</span> <span class="text-white/35 italic">// hydrate the cache</span>
+<span class="text-white/40">}</span></code></pre>
+    </div>
+
+    <div class="relative rounded-xl bg-white/[0.02] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden max-w-xl mt-6">
+      <span class="absolute top-3 right-4 text-[10px] font-semibold uppercase tracking-widest text-white/35 select-none">diff</span>
+      <pre class="m-0 px-5 py-4 overflow-x-auto font-mono text-[13px] leading-[1.7] text-white/80"><code><span class="text-red-300/90">- statusColor: 'blue'</span>
+<span class="text-emerald-400/90">+ statusColor: 'emerald'</span></code></pre>
+    </div>
+  </section>
+
+  <hr class="border-white/[0.06] max-w-5xl mx-auto" />
+
   <!-- ===== Inputs & Controls ===== -->
   <section class="max-w-5xl mx-auto px-6 sm:px-10 py-20">
     <h2 class="text-4xl sm:text-5xl font-semibold tracking-tight text-white mb-2">Inputs &amp; Controls</h2>
@@ -226,22 +256,22 @@
     <div class="grid sm:grid-cols-2 gap-y-10 gap-x-12">
       <div>
         <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Toggle Switch — ON</p>
-        <button id="toggle-on" role="switch" aria-checked="true" class="inline-flex w-9 h-5 rounded-full relative items-center transition-colors duration-300 bg-white/85 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] before:absolute before:-inset-3 before:content-['']">
+        <button id="toggle-on" role="switch" aria-checked="true" aria-label="Email notifications" class="inline-flex w-9 h-5 rounded-full relative items-center transition-colors duration-300 bg-white/85 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] before:absolute before:-inset-3 before:content-['']">
           <span class="absolute top-0.5 w-4 h-4 rounded-full bg-black shadow-[0_2px_6px_rgba(0,0,0,0.4)] transition-all duration-300" style="left: 18px;"></span>
         </button>
       </div>
 
       <div>
         <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Toggle Switch — OFF</p>
-        <button id="toggle-off" role="switch" aria-checked="false" class="inline-flex w-9 h-5 rounded-full relative items-center transition-colors duration-300 bg-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] before:absolute before:-inset-3 before:content-['']">
+        <button id="toggle-off" role="switch" aria-checked="false" aria-label="Marketing emails" class="inline-flex w-9 h-5 rounded-full relative items-center transition-colors duration-300 bg-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] before:absolute before:-inset-3 before:content-['']">
           <span class="absolute top-0.5 w-4 h-4 rounded-full bg-white/55 shadow-[0_2px_6px_rgba(0,0,0,0.4)] transition-all duration-300" style="left: 2px;"></span>
         </button>
       </div>
 
       <div>
         <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Checkbox — Checked</p>
-        <button role="checkbox" aria-checked="true" class="inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300 bg-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] before:absolute before:-inset-3 before:content-['']">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-black" aria-hidden="true">
+        <button role="checkbox" aria-checked="true" aria-label="Accept terms" class="inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300 shadow-[inset_0_0_0_8px_#fff] before:absolute before:-inset-3 before:content-['']">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-black transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-100" aria-hidden="true">
             <path d="M20 6 9 17l-5-5"></path>
           </svg>
         </button>
@@ -249,11 +279,50 @@
 
       <div>
         <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Checkbox — Unchecked</p>
-        <button role="checkbox" aria-checked="false" class="inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] before:absolute before:-inset-3 before:content-['']">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-black hidden" aria-hidden="true">
+        <button role="checkbox" aria-checked="false" aria-label="Subscribe to updates" class="inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] before:absolute before:-inset-3 before:content-['']">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-black transition-transform duration-300 scale-0" aria-hidden="true">
             <path d="M20 6 9 17l-5-5"></path>
           </svg>
         </button>
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Radio Group — one tab stop, arrow keys move selection</p>
+        <div role="radiogroup" aria-label="Example options" class="flex items-center gap-6">
+          <button role="radio" aria-checked="true" aria-label="Option one" class="inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300 shadow-[inset_0_0_0_8px_#fff] before:absolute before:-inset-3 before:content-['']">
+            <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-100"></span>
+          </button>
+          <button role="radio" aria-checked="false" aria-label="Option two" class="inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] before:absolute before:-inset-3 before:content-['']">
+            <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 scale-0"></span>
+          </button>
+          <button role="radio" aria-checked="false" aria-label="Option three" class="inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] before:absolute before:-inset-3 before:content-['']">
+            <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 scale-0"></span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Text Input</p>
+        <div class="flex flex-wrap items-start gap-4">
+          <input type="text" placeholder="Project name" aria-label="Project name" class="w-full max-w-56 px-3.5 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]" />
+          <input type="text" placeholder="Disabled" aria-label="Disabled example" disabled class="w-full max-w-56 px-3.5 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] opacity-45 pointer-events-none" />
+        </div>
+        <div class="w-full max-w-56 mt-4">
+          <input type="email" value="not-an-email" aria-label="Email" aria-invalid="true" aria-describedby="pv-email-error" class="w-full px-3.5 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)] hover:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]" />
+          <p id="pv-email-error" class="text-[13px] text-red-300/90 leading-relaxed mt-2">Enter a valid email address.</p>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-4">Textarea &amp; Select</p>
+        <div class="flex flex-wrap items-start gap-4">
+          <textarea placeholder="Describe the change…" class="w-full max-w-72 min-h-18 resize-y px-3.5 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]"></textarea>
+          <select aria-label="Environment" class="w-full max-w-56 appearance-none cursor-pointer pl-3.5 pr-9 py-2 rounded-md outline-none transition-all duration-300 bg-white/[0.02] text-[13px] text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] bg-no-repeat bg-[right_0.75rem_center] bg-[length:0.875rem] bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27none%27%20stroke=%27%23888888%27%20stroke-width=%272%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27m6%209%206%206%206-6%27/%3E%3C/svg%3E')]">
+            <option class="bg-neutral-900 text-white/80">Production</option>
+            <option class="bg-neutral-900 text-white/80">Staging</option>
+            <option class="bg-neutral-900 text-white/80">Development</option>
+          </select>
+        </div>
       </div>
     </div>
   </section>
@@ -323,14 +392,61 @@
       });
     });
 
+    // Checkboxes and radios share the same visual swap: the filled state
+    // replaces the hairline shadow with an 8px inset spread and scales the
+    // glyph up; unchecking reverses both.
+    function setChecked(btn, checked) {
+      const glyph = btn.querySelector('svg, span');
+      btn.setAttribute('aria-checked', checked ? 'true' : 'false');
+      btn.classList.toggle('shadow-[inset_0_0_0_8px_#fff]', checked);
+      btn.classList.toggle('shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]', !checked);
+      btn.classList.toggle('hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]', !checked);
+      glyph.classList.toggle('scale-100', checked);
+      glyph.classList.toggle('scale-0', !checked);
+      glyph.classList.toggle('ease-[cubic-bezier(0.34,1.56,0.64,1)]', checked);
+    }
+
     document.querySelectorAll('[role="checkbox"]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const checked = btn.getAttribute('aria-checked') === 'true';
-        const icon = btn.querySelector('svg');
-        btn.setAttribute('aria-checked', checked ? 'false' : 'true');
-        btn.classList.toggle('bg-white', !checked);
-        icon.classList.toggle('hidden', checked);
+        setChecked(btn, btn.getAttribute('aria-checked') !== 'true');
       });
+    });
+
+    // Radio groups are a single tab stop: the selected radio carries
+    // tabindex="0", the rest -1, and Arrow keys move both focus and
+    // selection (roving tabindex).
+    document.querySelectorAll('[role="radiogroup"]').forEach(group => {
+      const radios = [...group.querySelectorAll('[role="radio"]')];
+      const select = btn => {
+        radios.forEach(r => { setChecked(r, r === btn); r.tabIndex = r === btn ? 0 : -1; });
+        btn.focus();
+      };
+      radios.forEach(r => { r.tabIndex = r.getAttribute('aria-checked') === 'true' ? 0 : -1; });
+      radios.forEach(btn => btn.addEventListener('click', () => select(btn)));
+      group.addEventListener('keydown', e => {
+        const i = radios.indexOf(document.activeElement);
+        if (i < 0) return;
+        let j = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % radios.length;
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   j = (i - 1 + radios.length) % radios.length;
+        if (j !== null) { e.preventDefault(); select(radios[j]); }
+      });
+    });
+
+    // Code block copy buttons: write the clipboard, then swap the copy icon
+    // for the popping checkmark for a beat.
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      const [copyIcon, checkIcon] = btn.querySelectorAll('svg');
+      btn.addEventListener('click', () =>
+        navigator.clipboard.writeText(btn.parentElement.querySelector('pre').innerText).then(() => {
+          copyIcon.classList.add('scale-0', 'opacity-0');
+          checkIcon.classList.replace('scale-0', 'scale-100');
+          clearTimeout(btn._copiedTimer);
+          btn._copiedTimer = setTimeout(() => {
+            copyIcon.classList.remove('scale-0', 'opacity-0');
+            checkIcon.classList.replace('scale-100', 'scale-0');
+          }, 1500);
+        }));
     });
   </script>
 

@@ -54,6 +54,11 @@ The same values recur across every component. Reach for these before inventing n
 | **Transition / colors** | `transition-colors duration-200` | Background / text color changes only |
 | **Transition / all** | `transition-all duration-300` | When border / shadow / position also animates |
 
+### Flexibility
+This document specifies the canonical dark theme. snowball.css implements every color as a `light-dark()` pair, follows the OS color scheme by default, and supports forcing a theme with `data-theme="dark"` (the classic Snowball look) or `data-theme="light"` on `<html>`; it also honors `prefers-reduced-motion` and lives in `@layer snowball`, so any unlayered consumer rule overrides it. The Tailwind reference markup in this file is dark-only.
+
+Corner radius and border (hairline) width are the two shape knobs a consumer may adjust — swap the radius token for another canonical step, or thicken the hairline (in Tailwind, change the inset-shadow spread, e.g. `shadow-[inset_0_0_0_2px_…]`; because hairlines are inset shadows, this never changes a component's outer size). In snowball.css both knobs work per element (`style="--radius: 4px; --border: 2px"` on any surface) and globally (`--sb-radius-*`, `--sb-border-width`); `snowball.config.css` lists every global token at its default, ready to uncomment. Everything else about a component's geometry — its size, padding, and proportions — is fixed: do not stretch, shrink, or re-space components to fit a layout; adjust the layout instead.
+
 ### Spacing scale
 Components stick to a narrow set of paddings to keep rhythm consistent.
 
@@ -101,8 +106,13 @@ Pick by **intent**, not by appearance. If a row matches what the user is trying 
 | Status, category, or metadata label (read-only) | **Tag / Badge** |
 | Boolean preference that takes effect immediately | **Toggle Switch** |
 | Multi-select, opt-in, or form agreement | **Checkbox Button** |
+| Pick exactly one option from a small mutually exclusive set | **Radio Button** |
+| Free-form text entry, single line | **Text Input** |
+| Free-form text entry, multi-line | **Textarea** |
+| Pick one option from a long or unfamiliar list | **Select** |
 | Indeterminate in-progress state | **Loading Spinner** |
 | Determinate progress with a known percentage | **Progress Bar** |
+| Source code, config snippets, or terminal output | **Code Block** |
 
 ### Buttons
 All buttons feature an invisible expanded click area using the `before:` pseudo-element for accessibility.
@@ -229,7 +239,39 @@ All buttons feature an invisible expanded click area using the `before:` pseudo-
 </span>
 ```
 
+#### Code Block
+*A surface container for source code, paired with a monochrome syntax palette: opacity and weight carry the token hierarchy, and color appears only in diff lines (inserted / deleted — the success / danger pair). Syntax tokens come from whatever highlighter the host project uses (Prism, highlight.js, Shiki); snowball.css maps all three vocabularies to this palette. The optional `lang` attribute renders as a corner label.*
+
+*A copy-to-clipboard button is part of the default anatomy — include it unless copying makes no sense for the content (diff samples, terminal transcripts with prompts). On click, write the `<pre>`'s `innerText` to the clipboard and swap the copy icon for the checkmark for ~1.5s (same overshoot ease as the checkbox glyph). In snowball.css the button is `<button copy>` as the first child and the `nocopy` attribute on the block hides it; when the button is present the lang label steps left (`right-4` → `right-11`).*
+```html
+<div class="relative rounded-xl bg-white/[0.02] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden">
+  <span class="absolute top-3 right-11 text-[10px] font-semibold uppercase tracking-widest text-white/35 select-none">js</span>
+  <button aria-label="Copy code" class="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors duration-200 hover:text-white hover:bg-white/[0.04] before:absolute before:-inset-2 before:content-['']">
+    <!-- copy icon, swapped for a check while copied -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 transition-all duration-200" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 absolute text-white scale-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+  </button>
+  <pre class="m-0 px-5 py-4 overflow-x-auto font-mono text-[13px] leading-[1.7] text-white/80"><code>…</code></pre>
+</div>
+```
+
+| Token role | Color | Extra |
+| :--- | :--- | :--- |
+| Keywords, booleans | `text-white` | `font-medium` |
+| Functions, types, tags | `text-white/90` | |
+| Numbers, constants | `text-white/90` | |
+| Strings, regex, URLs | `text-white/65` | |
+| Attribute / property names | `text-white/55` | |
+| Comments | `text-white/35` | `italic` |
+| Punctuation, operators | `text-white/40` | |
+| Diff inserted | success accent (`text-emerald-400/90`) | |
+| Diff deleted | `text-red-300/90` | |
+
+*Inline code (a `<code>` outside a `<pre>`) renders as a subtle chip: `px-[5px] py-[2px] rounded bg-white/[0.04] text-white/90 font-mono text-[0.85em]`.*
+
 ### Inputs & Controls
+
+Every control needs an accessible name — a visible `<label>`, `aria-label`, or `aria-labelledby`. Icon-only and glyph-only controls (toggles, checkboxes, radios, icon buttons) have no text content, so without one a screen reader announces "switch, on" with no clue what it controls.
 
 #### Toggle Switch
 *Two states. Swap the track classes and the handle's `left` value together — never just one.*
@@ -254,15 +296,15 @@ All buttons feature an invisible expanded click area using the `before:` pseudo-
 ```
 
 #### Checkbox Button
-*Two states. The unchecked state is border-only (inset shadow) with no fill and no icon; the checked state fills white and renders a black checkmark.*
+*Two states. The unchecked state is border-only (inset shadow) with the checkmark scaled to zero; the checked state grows the white fill inward from the hairline (an inset-shadow spread of 8px covers the whole 16px control) and pops the black checkmark in with a slight overshoot. Keep the icon in the DOM in both states so the swap animates in both directions.*
 ```html
 <!-- State: Checked -->
 <button role="checkbox" aria-checked="true" class="
   inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300
-  bg-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]
+  shadow-[inset_0_0_0_8px_#fff]
   before:absolute before:-inset-3 before:content-['']
 ">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-black" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-black transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-100" aria-hidden="true">
     <path d="M20 6 9 17l-5-5"></path>
   </svg>
 </button>
@@ -272,7 +314,75 @@ All buttons feature an invisible expanded click area using the `before:` pseudo-
   inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300
   shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
   before:absolute before:-inset-3 before:content-['']
-"></button>
+">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-black transition-transform duration-300 scale-0" aria-hidden="true">
+    <path d="M20 6 9 17l-5-5"></path>
+  </svg>
+</button>
+```
+
+#### Radio Button
+*Same construction as the checkbox — inward-growing white fill, popping glyph — but circular (`rounded-full`) and with a black center dot instead of a checkmark. Exactly one radio per group carries `aria-checked="true"`. The group must be a single tab stop: the selected radio carries `tabindex="0"`, the rest `tabindex="-1"`, and Arrow keys move both focus and selection (roving tabindex — see the script in preview.html or components.html).*
+```html
+<!-- State: Selected -->
+<button role="radio" aria-checked="true" class="
+  inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300
+  shadow-[inset_0_0_0_8px_#fff]
+  before:absolute before:-inset-3 before:content-['']
+">
+  <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-100"></span>
+</button>
+
+<!-- State: Unselected -->
+<button role="radio" aria-checked="false" class="
+  inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300
+  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
+  before:absolute before:-inset-3 before:content-['']
+">
+  <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 scale-0"></span>
+</button>
+```
+
+#### Text Input & Textarea
+*The standard hairline surface made editable. Focus is signaled by the brightened hairline (the same step the checkbox uses on hover) plus a faint fill lift — no outline ring. Disabled fields use `opacity-45 pointer-events-none`.*
+```html
+<input type="text" placeholder="Project name" class="
+  w-full max-w-xs px-3.5 py-2 rounded-md outline-none transition-all duration-300
+  bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35
+  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]
+  hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]
+  focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
+" />
+```
+*Textarea is identical plus `min-h-18 resize-y` (vertical resize only — horizontal would break the layout).*
+
+*Invalid fields carry `aria-invalid="true"` and swap the hairline for the danger pair — the same relationship the danger button has to secondary. Describe the error in text linked via `aria-describedby`.*
+```html
+<input type="email" value="not-an-email" aria-invalid="true" aria-describedby="email-error" class="
+  w-full max-w-xs px-3.5 py-2 rounded-md outline-none transition-all duration-300
+  bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35
+  shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)]
+  hover:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]
+  focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]
+" />
+<p id="email-error" class="text-[13px] text-red-300/90 leading-relaxed mt-2">Enter a valid email address.</p>
+```
+
+#### Select
+*A native `<select>` with `appearance-none` and an inline SVG chevron, so the closed control matches the text input exactly. Give every `<option>` an explicit solid background and text color — options don't inherit the translucent fills, and the UA defaults are unreadable on dark. Beware the `background` shorthand on hover/focus states: it wipes the chevron `background-image`; only ever touch `background-color`. snowball.css additionally upgrades the open dropdown where `appearance: base-select` is supported (Chromium): the panel is styled via `::picker(select)` as a hairline surface with quiet options, the chevron (`::picker-icon`) rotates while open, and the panel fades in; other engines keep the recolored native dropdown.*
+```html
+<select class="
+  w-full max-w-xs appearance-none cursor-pointer pl-3.5 pr-9 py-2 rounded-md outline-none transition-all duration-300
+  bg-white/[0.02] text-[13px] text-white/80
+  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]
+  hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]
+  focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
+  bg-no-repeat bg-[right_0.75rem_center] bg-[length:0.875rem]
+  bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27none%27%20stroke=%27%23888888%27%20stroke-width=%272%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27m6%209%206%206%206-6%27/%3E%3C/svg%3E')]
+">
+  <option class="bg-neutral-900 text-white/80">Production</option>
+  <option class="bg-neutral-900 text-white/80">Staging</option>
+</select>
 ```
 
 

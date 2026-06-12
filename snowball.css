@@ -1,0 +1,889 @@
+/* ==========================================================================
+   🐇 Snowball 1.1.0 — component stylesheet
+   Standalone CSS implementation of design.md. No Tailwind required.
+
+   Display-only components are custom tags:
+     <loadingspinner size="sm|lg|xl">    <progressbar style="--value: 60%">
+     <tag>beta</tag>                     <card quiet?>…</card>
+     <statcard> <statlabel/> <statvalue/> <statdelta up|down/> </statcard>
+     <codeblock lang="ts"><pre><code>…</code></pre></codeblock>
+   Every custom tag has a hyphenated alias (loading-spinner, stat-card,
+   sb-tag, sb-card, …) — use those in React/Vue so the tags are treated as
+   custom elements instead of unknown HTML.
+
+   Interactive components stay real elements (keyboard focus and
+   screen-reader semantics can't be replicated on an unknown tag):
+     <button variant="primary|secondary|danger|ghost|icon">
+     <button role="switch|checkbox|radio" aria-checked="true|false">
+     <input type="text"> <textarea> <select> — styled with no class at all
+   Button state lives in aria-checked only, so toggling is one setAttribute
+   call. Radio groups should be a single tab stop: the selected radio gets
+   tabindex="0", the rest -1, and Arrow keys move both focus and selection —
+   see the roving-tabindex snippet in components.html.
+
+   Code blocks ship a copy-to-clipboard button by default: author it as the
+   first child — <button copy aria-label="Copy code">…icon…</button> — or
+   inject it everywhere with the snippet in components.html. The click
+   handler writes the clipboard and sets data-copied for a beat; CSS swaps
+   the icon for a checkmark. Hide it per block with <codeblock nocopy>.
+   Syntax colors cover Prism (.token.*), highlight.js (.hljs-*), and Shiki's
+   css-variables theme; plain un-highlighted code works too. The palette is
+   monochrome per design.md — opacity and weight carry the hierarchy, and
+   color appears only in diffs (inserted / deleted).
+
+   Theming: every color is a light-dark() pair, so the system follows the
+   OS color scheme by default. Force a theme by putting data-theme="dark"
+   or data-theme="light" on <html> — tokens resolve at :root, so the
+   attribute only works there, not on subtrees. Browsers without
+   light-dark() (pre-2024) are not supported.
+
+   Overrides: the whole sheet lives in @layer snowball, so any unlayered
+   consumer rule wins regardless of specificity — no !important needed.
+   Every surface honors local --radius and --border overrides
+   (<card style="--radius: 4px; --border: 2px">), and the :root tokens
+   retheme the system at once — snowball.config.css lists every knob, ready
+   to uncomment. Hairlines render as inset box-shadows, composed from
+   width × color at each use site; a pre-composed shadow token would bake
+   the width in at :root and break the local --border override. Geometry —
+   sizes, paddings, proportions — is intentionally fixed; components are
+   not meant to be stretched.
+   ========================================================================== */
+
+/* @property must stay outside @layer */
+@property --sb-arc {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 250deg;
+}
+@property --sb-head {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@layer snowball {
+
+:root {
+  color-scheme: light dark;
+
+  /* Text opacity steps */
+  --sb-text-micro:   light-dark(rgba(0, 0, 0, 0.40), rgba(255, 255, 255, 0.35));
+  --sb-text-dim:     light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.40));
+  --sb-text-muted:   light-dark(rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.55));
+  --sb-text-link:    light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.65));
+  --sb-text-body:    light-dark(rgba(0, 0, 0, 0.80), rgba(255, 255, 255, 0.80));
+  --sb-text-strong:  light-dark(rgba(0, 0, 0, 0.88), rgba(255, 255, 255, 0.90));
+  --sb-text:         light-dark(#171717, #ffffff);
+
+  /* Page background and the solid (inverted) surface — primary buttons,
+     checked checkboxes/radios, the toggle-on track */
+  --sb-bg:           light-dark(#fafafa, #000000);
+  --sb-panel:        light-dark(#ffffff, #161616);  /* popovers: select dropdowns */
+  --sb-solid:        light-dark(#171717, #ffffff);
+  --sb-solid-hover:  light-dark(rgba(23, 23, 23, 0.88), rgba(255, 255, 255, 0.9));
+  --sb-solid-active: light-dark(rgba(23, 23, 23, 0.78), rgba(255, 255, 255, 0.8));
+  --sb-solid-dim:    light-dark(rgba(23, 23, 23, 0.85), rgba(255, 255, 255, 0.85));
+  --sb-on-solid:     light-dark(#ffffff, #000000);
+
+  /* Surface fills */
+  --sb-fill-faint:   light-dark(rgba(0, 0, 0, 0.015), rgba(255, 255, 255, 0.01));
+  --sb-fill:         light-dark(rgba(0, 0, 0, 0.025), rgba(255, 255, 255, 0.02));
+  --sb-fill-hover:   light-dark(rgba(0, 0, 0, 0.04),  rgba(255, 255, 255, 0.03));
+  --sb-fill-track:   light-dark(rgba(0, 0, 0, 0.06),  rgba(255, 255, 255, 0.04));
+
+  /* Border width and hairline colors */
+  --sb-border-width: 1px;
+  --sb-line-quiet:  light-dark(rgba(0, 0, 0, 0.07), rgba(255, 255, 255, 0.05));
+  --sb-line-card:   light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.06));
+  --sb-line:        light-dark(rgba(0, 0, 0, 0.10), rgba(255, 255, 255, 0.08));
+  --sb-line-strong: light-dark(rgba(0, 0, 0, 0.20), rgba(255, 255, 255, 0.16));
+  --sb-line-danger:        light-dark(rgba(220, 38, 38, 0.35), rgba(239, 68, 68, 0.22));
+  --sb-line-danger-strong: light-dark(rgba(220, 38, 38, 0.55), rgba(239, 68, 68, 0.40));
+
+  /* Accents — success/danger are a paired slot; change them together */
+  --sb-success: light-dark(rgb(5 150 105 / 0.95), rgb(52 211 153 / 0.9));
+  --sb-danger:       light-dark(rgb(220 38 38 / 0.9), rgb(252 165 165 / 0.9));
+  --sb-danger-text:  light-dark(rgb(220 38 38), rgb(252 165 165));
+  --sb-danger-hover: light-dark(rgb(153 27 27), rgb(254 202 202));
+  --sb-danger-fill:  light-dark(rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.06));
+
+  /* Radii */
+  --sb-radius:        0.25rem;   /* tags, badges        */
+  --sb-radius-control: 4px;      /* checkboxes          */
+  --sb-radius-button: 0.375rem;  /* buttons, inputs     */
+  --sb-radius-card:   0.75rem;   /* cards, panels       */
+  --sb-radius-pill:   9999px;    /* toggles, progress   */
+
+  --sb-font: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --sb-font-mono: ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono',
+    'Cascadia Code', Menlo, Consolas, monospace;
+}
+
+/* Forced theme — set on <html>; tokens resolve at :root only */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+/* Canonical dark success accent from design.md; the rgb() above is the fallback */
+@supports (color: oklab(0.7 0 0)) {
+  :root {
+    --sb-success: light-dark(rgb(5 150 105 / 0.95), oklab(0.765 -0.169466 0.0510908 / 0.9));
+  }
+}
+
+/* Base — :where() keeps specificity at zero ------------------------------ */
+:where(*, *::before, *::after) { box-sizing: border-box; }
+
+:where(body) {
+  margin: 0;
+  background: var(--sb-bg);
+  color: var(--sb-text-body);
+  font-family: var(--sb-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:where(hr) {
+  border: 0;
+  border-top: var(--border, var(--sb-border-width)) solid var(--sb-line-card);
+}
+
+:where(a) {
+  color: var(--sb-text-link);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+:where(a):hover { color: var(--sb-text); }
+
+/* Typography -------------------------------------------------------------- */
+:where(h1), .h1 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  color: var(--sb-text);
+  margin: 0;
+}
+:where(h2), .h2 {
+  font-size: clamp(2.25rem, 4.5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--sb-text);
+  margin: 0;
+}
+:where(h3), .h3 {
+  font-size: clamp(1.5rem, 2.5vw, 1.875rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--sb-text);
+  margin: 0;
+}
+:where(p) {
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  line-height: 1.625;
+  max-width: 36rem;
+  color: var(--sb-text-body);
+  margin: 0;
+}
+
+.page-title {
+  font-size: clamp(3.75rem, 9vw, 8rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+  color: var(--sb-text);
+}
+.title-desc {
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  line-height: 1.625;
+  max-width: 36rem;
+  color: var(--sb-text-muted);
+}
+.hero-desc {
+  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  line-height: 1.625;
+  max-width: 42rem;
+  color: var(--sb-text-muted);
+}
+.muted-desc {
+  font-size: clamp(0.8125rem, 0.79rem + 0.15vw, 0.875rem);
+  line-height: 1.625;
+  color: var(--sb-text-muted);
+}
+.micro-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--sb-text-muted);
+  white-space: nowrap;
+}
+.metric-value {
+  font-size: 1.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--sb-text);
+}
+.link {
+  font-size: 0.875rem;
+  color: var(--sb-text-link);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.link:hover { color: var(--sb-text); }
+
+/* Buttons — bare <button> renders as secondary ---------------------------- */
+button:where(:not([role="switch"]):not([role="checkbox"]):not([role="radio"])) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: var(--radius, var(--sb-radius-button));
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  position: relative;
+  color: var(--sb-text-body);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line);
+  transition: color 0.3s, background-color 0.3s, box-shadow 0.3s;
+}
+button:where(:not([role="switch"]):not([role="checkbox"]):not([role="radio"])):hover {
+  color: var(--sb-text);
+  background: var(--sb-fill);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-strong);
+}
+
+/* Invisible expanded tap target (design.md rule 4 — do not remove) */
+button { position: relative; }
+button::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
+}
+button[role="switch"]::before,
+button[role="checkbox"]::before,
+button[role="radio"]::before { inset: -0.75rem; }
+
+button:focus-visible {
+  outline: 2px solid light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.35));
+  outline-offset: 2px;
+}
+button:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+button[variant="primary"] {
+  background: var(--sb-solid);
+  color: var(--sb-on-solid);
+  box-shadow: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+button[variant="primary"]:hover  { background: var(--sb-solid-hover); color: var(--sb-on-solid); box-shadow: none; }
+button[variant="primary"]:active { background: var(--sb-solid-active); }
+
+button[variant="danger"] {
+  color: var(--sb-danger-text);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-danger);
+}
+button[variant="danger"]:hover {
+  color: var(--sb-danger-hover);
+  background: var(--sb-danger-fill);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-danger-strong);
+}
+
+button[variant="ghost"] {
+  padding: 0.375rem 0.75rem;
+  color: var(--sb-text-muted);
+  box-shadow: none;
+  transition: color 0.2s, background-color 0.2s;
+}
+button[variant="ghost"]:hover {
+  color: var(--sb-text);
+  background: var(--sb-fill-hover);
+  box-shadow: none;
+}
+
+button[variant="icon"] {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  justify-content: center;
+  color: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.6));
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card);
+}
+button[variant="icon"]:hover {
+  color: var(--sb-text);
+  background: var(--sb-fill-track);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.14));
+}
+button[variant="icon"] svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Toggle Switch ------------------------------------------------------------ */
+button[role="switch"] {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--sb-radius-pill);
+  cursor: pointer;
+  background: light-dark(rgba(0, 0, 0, 0.10), rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line);
+  transition: background-color 0.3s;
+}
+button[role="switch"]::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-text-muted);
+  box-shadow: 0 2px 6px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.4));
+  transition: left 0.3s, background-color 0.3s;
+}
+button[role="switch"][aria-checked="true"] { background: var(--sb-solid-dim); }
+button[role="switch"][aria-checked="true"]::after {
+  left: 18px;
+  background: var(--sb-on-solid);
+}
+
+/* Checkbox & Radio ----------------------------------------------------------
+   On check, the solid fill grows inward from the hairline (animated
+   inset-shadow spread) and the glyph pops in with a slight overshoot. */
+button[role="checkbox"],
+button[role="radio"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: transparent;
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-strong);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+button[role="checkbox"] { border-radius: var(--radius, var(--sb-radius-control)); }
+button[role="radio"]    { border-radius: var(--sb-radius-pill); }
+
+button[role="checkbox"]:hover,
+button[role="radio"]:hover {
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.3));
+}
+button[role="checkbox"]:active,
+button[role="radio"]:active {
+  transform: scale(0.9);
+}
+/* Keep after :hover so the checked fill wins while hovered */
+button[role="checkbox"][aria-checked="true"],
+button[role="radio"][aria-checked="true"] {
+  box-shadow: inset 0 0 0 0.5rem var(--sb-solid);
+}
+
+/* Glyphs stay in the DOM so they animate in both directions */
+button[role="checkbox"]::after {
+  content: "";
+  width: 8px;
+  height: 5px;
+  border-left: 1.5px solid var(--sb-on-solid);
+  border-bottom: 1.5px solid var(--sb-on-solid);
+  opacity: 0;
+  transform: translateY(-1px) rotate(-45deg) scale(0.4);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+button[role="radio"]::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-on-solid);
+  opacity: 0;
+  transform: scale(0.3);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+button[role="checkbox"][aria-checked="true"]::after {
+  opacity: 1;
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s, opacity 0.15s 0.05s;
+}
+button[role="radio"][aria-checked="true"]::after {
+  opacity: 1;
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s, opacity 0.15s 0.05s;
+}
+
+/* Text Input, Textarea & Select ----------------------------------------------
+   Focus is signaled by the brightened hairline (the same step the checkbox
+   uses on hover) plus a faint fill lift — no outline ring. */
+:where(input:not([type]), input[type="text"], input[type="email"],
+  input[type="password"], input[type="search"], input[type="url"],
+  input[type="tel"], input[type="number"]),
+:where(textarea, select) {
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  border-radius: var(--radius, var(--sb-radius-button));
+  background-color: var(--sb-fill);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--sb-text-body);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line);
+  outline: none;
+  transition: color 0.3s, background-color 0.3s, box-shadow 0.3s;
+}
+:where(input, textarea)::placeholder { color: var(--sb-text-micro); }
+:where(input:not([type]), input[type="text"], input[type="email"],
+  input[type="password"], input[type="search"], input[type="url"],
+  input[type="tel"], input[type="number"], textarea, select):hover {
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-strong);
+}
+:where(input:not([type]), input[type="text"], input[type="email"],
+  input[type="password"], input[type="search"], input[type="url"],
+  input[type="tel"], input[type="number"], textarea, select):focus {
+  color: var(--sb-text);
+  /* background-color, not the shorthand — it would wipe the select chevron */
+  background-color: var(--sb-fill-hover);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.3));
+}
+:where(input, textarea, select):disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+/* Invalid state — aria-invalid="true" swaps the hairline for the danger
+   pair, the same relationship the danger button has to secondary */
+:where(input, textarea, select)[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-danger);
+}
+:where(input, textarea, select)[aria-invalid="true"]:hover,
+:where(input, textarea, select)[aria-invalid="true"]:focus {
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-danger-strong);
+}
+:where(textarea) {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+:where(select) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.875rem;
+}
+/* Native dropdown fallback — solid panel colors so the open list is
+   readable in both themes (options don't inherit the translucent fills) */
+:where(select) option {
+  background-color: var(--sb-panel);
+  color: var(--sb-text-body);
+}
+
+/* Customizable select — where appearance: base-select is supported, the
+   dropdown panel itself joins the system: hairline panel, quiet options,
+   rotating chevron. Elsewhere the native (recolored) dropdown is used. */
+@supports (appearance: base-select) {
+  :where(select),
+  :where(select)::picker(select) {
+    appearance: base-select;
+  }
+  :where(select) {
+    background-image: none;
+    padding-right: 0.875rem;
+  }
+  :where(select)::picker-icon {
+    color: var(--sb-text-dim);
+  }
+  :where(select):open::picker-icon { transform: rotate(180deg); }
+  :where(select)::picker(select) {
+    /* both block edges, so the gap survives when the panel flips upward */
+    margin-block: 0.25rem;
+    padding: 0.25rem;
+    border: var(--border, var(--sb-border-width)) solid var(--sb-line-strong);
+    border-radius: 0.5rem;
+    background: var(--sb-panel);
+    box-shadow: 0 8px 24px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.5));
+  }
+  :where(select) option {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--sb-radius-button);
+    font-size: 13px;
+    background: transparent;
+    color: var(--sb-text-muted);
+    cursor: pointer;
+  }
+  :where(select) option:hover,
+  :where(select) option:focus-visible {
+    color: var(--sb-text);
+    background: var(--sb-fill-track);
+    outline: none;
+  }
+  /* Selection is carried by weight and full text color, not a glyph */
+  :where(select) option:checked {
+    color: var(--sb-text);
+    font-weight: 500;
+  }
+  :where(select) option::checkmark { display: none; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :where(select)::picker-icon { transition: transform 0.2s; }
+    :where(select) option { transition: color 0.2s, background-color 0.2s; }
+    /* Fade/slide the panel; discrete transitions animate it from display:none */
+    :where(select)::picker(select) {
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 0.15s, transform 0.15s,
+        display 0.15s allow-discrete, overlay 0.15s allow-discrete;
+    }
+    :where(select):open::picker(select) {
+      opacity: 1;
+      transform: none;
+    }
+    @starting-style {
+      :where(select):open::picker(select) {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+    }
+  }
+}
+
+/* Loading Spinner ------------------------------------------------------------
+   Default 1.25rem; any size via style="--size: 48px". The dash cycle needs
+   @property; engines without it fall back to a fixed rotating arc. */
+loadingspinner, loading-spinner {
+  --size: 1.25rem;
+  --stroke: max(1.5px, calc(var(--size) / 12));
+  position: relative;
+  display: inline-block;
+  width: var(--size);
+  height: var(--size);
+  color: var(--sb-text);
+}
+loadingspinner[size="sm"], loading-spinner[size="sm"] { --size: 1rem; }
+loadingspinner[size="lg"], loading-spinner[size="lg"] { --size: 2rem; }
+loadingspinner[size="xl"], loading-spinner[size="xl"] { --size: 3rem; }
+
+loadingspinner::before, loading-spinner::before,
+loadingspinner::after,  loading-spinner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--sb-radius-pill);
+}
+loadingspinner::before, loading-spinner::before {
+  border: var(--stroke) solid currentColor;
+  opacity: 0.15;
+}
+loadingspinner::after, loading-spinner::after {
+  background: conic-gradient(from var(--sb-head, 0deg),
+    currentColor var(--sb-arc, 250deg), transparent 0deg);
+  -webkit-mask: radial-gradient(farthest-side,
+    transparent calc(100% - var(--stroke) - 0.5px),
+    #000 calc(100% - var(--stroke)));
+  mask: radial-gradient(farthest-side,
+    transparent calc(100% - var(--stroke) - 0.5px),
+    #000 calc(100% - var(--stroke)));
+  animation: sb-spin 2s linear infinite, sb-arc 1.5s ease-in-out infinite;
+}
+
+@keyframes sb-spin {
+  to { transform: rotate(360deg); }
+}
+/* 100% ≡ 0% mod 360°, so the cycle loops without a snap */
+@keyframes sb-arc {
+  0%   { --sb-arc: 30deg;  --sb-head: 0deg; }
+  50%  { --sb-arc: 250deg; --sb-head: 70deg; }
+  100% { --sb-arc: 30deg;  --sb-head: 360deg; }
+}
+
+/* Progress Bar --------------------------------------------------------------- */
+progressbar, progress-bar {
+  display: block;
+  width: 100%;
+  max-width: 10rem;
+  height: 4px;
+  border-radius: var(--sb-radius-pill);
+  overflow: hidden;
+  background: var(--sb-fill-track);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.02));
+}
+progressbar::after, progress-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: var(--value, 0%);
+  border-radius: var(--sb-radius-pill);
+  background: light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.7));
+  transition: width 0.3s;
+}
+
+/* Tag / Badge ----------------------------------------------------------------- */
+tag, badge, sb-tag, sb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius, var(--sb-radius));
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: var(--sb-text-muted);
+  background: var(--sb-fill-track);
+}
+
+/* Stat Card -------------------------------------------------------------------- */
+statcard, stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 14rem;
+  padding: 1.25rem;
+  border-radius: var(--radius, var(--sb-radius-card));
+  background: var(--sb-fill-faint);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-quiet);
+}
+statlabel, stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: var(--sb-text-micro);
+}
+statvalue, stat-value {
+  margin-top: 4px;
+  font-size: 1.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--sb-text);
+}
+statdelta, stat-delta {
+  margin-top: 4px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sb-text-muted);
+}
+statdelta[up], stat-delta[up]     { color: var(--sb-success); }
+statdelta[down], stat-delta[down] { color: var(--sb-danger); }
+
+/* Card / Panel -------------------------------------------------------------------- */
+card, panel, sb-card, sb-panel {
+  display: block;
+  padding: 1.25rem;
+  border-radius: var(--radius, var(--sb-radius-card));
+  background: var(--sb-fill);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card);
+}
+card[quiet], panel[quiet], sb-card[quiet], sb-panel[quiet] {
+  background: var(--sb-fill-faint);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-quiet);
+}
+
+/* Code Block ----------------------------------------------------------------------- */
+codeblock, code-block {
+  /* One palette, mapped to every highlighter's vocabulary below */
+  --code-keyword: var(--sb-text);          /* control flow, declarations  */
+  --code-entity:  var(--sb-text-strong);   /* functions, types, tags      */
+  --code-literal: var(--sb-text-strong);   /* numbers, booleans, consts   */
+  --code-string:  var(--sb-text-link);     /* strings, regex, urls        */
+  --code-attr:    var(--sb-text-muted);    /* attribute / property names  */
+  --code-comment: var(--sb-text-micro);
+  --code-punct:   var(--sb-text-dim);
+
+  --shiki-foreground: var(--sb-text-body);
+  --shiki-background: transparent;
+  --shiki-token-keyword: var(--code-keyword);
+  --shiki-token-function: var(--code-entity);
+  --shiki-token-constant: var(--code-literal);
+  --shiki-token-string: var(--code-string);
+  --shiki-token-string-expression: var(--code-string);
+  --shiki-token-comment: var(--code-comment);
+  --shiki-token-punctuation: var(--code-punct);
+  --shiki-token-parameter: var(--sb-text-body);
+  --shiki-token-link: var(--code-string);
+
+  display: block;
+  position: relative;
+  max-width: 100%;
+  border-radius: var(--radius, var(--sb-radius-card));
+  background: var(--sb-fill);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card);
+  overflow: hidden;
+}
+codeblock > pre, code-block > pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--sb-font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  tab-size: 2;
+  color: var(--sb-text-body);
+  background: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.1)) transparent;
+}
+codeblock > pre::-webkit-scrollbar, code-block > pre::-webkit-scrollbar { height: 8px; }
+codeblock > pre::-webkit-scrollbar-thumb, code-block > pre::-webkit-scrollbar-thumb {
+  background: light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.1));
+  border-radius: var(--sb-radius-pill);
+}
+codeblock[lang]::before, code-block[lang]::before {
+  content: attr(lang);
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  font-family: var(--sb-font);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--sb-text-micro);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Lang label steps aside when a copy button shares the corner */
+:is(codeblock, code-block)[lang]:has(> button[copy])::before { right: 2.75rem; }
+
+/* Copy button — data-copied swaps the icon for the checkmark */
+:is(codeblock, code-block) > button[copy] {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  justify-content: center;
+  color: var(--sb-text-dim);
+  background: transparent;
+  box-shadow: none;
+  transition: color 0.2s, background-color 0.2s;
+}
+:is(codeblock, code-block) > button[copy]:hover {
+  color: var(--sb-text);
+  background: var(--sb-fill-track);
+  box-shadow: none;
+}
+:is(codeblock, code-block) > button[copy] svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  transition: transform 0.2s, opacity 0.15s;
+}
+:is(codeblock, code-block) > button[copy]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 5px;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  opacity: 0;
+  transform: translate(-50%, calc(-50% - 1px)) rotate(-45deg) scale(0.4);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+:is(codeblock, code-block) > button[copy][data-copied] { color: var(--sb-text); }
+:is(codeblock, code-block) > button[copy][data-copied] svg {
+  opacity: 0;
+  transform: scale(0.5);
+}
+:is(codeblock, code-block) > button[copy][data-copied]::after {
+  opacity: 1;
+  transform: translate(-50%, calc(-50% - 1px)) rotate(-45deg) scale(1);
+}
+:is(codeblock, code-block)[nocopy] > button[copy] { display: none; }
+
+/* Token palette — Prism and highlight.js class vocabularies */
+:is(codeblock, code-block) :is(.token.keyword, .token.boolean, .token.important,
+  .token.atrule, .hljs-keyword, .hljs-literal, .hljs-selector-tag, .hljs-doctag) {
+  color: var(--code-keyword);
+  font-weight: 500;
+}
+:is(codeblock, code-block) :is(.token.function, .token.class-name, .token.tag,
+  .token.selector, .token.builtin, .token.namespace, .hljs-title, .hljs-built_in,
+  .hljs-name, .hljs-section, .hljs-selector-class, .hljs-selector-id) {
+  color: var(--code-entity);
+}
+:is(codeblock, code-block) :is(.token.number, .token.constant, .token.symbol,
+  .hljs-number, .hljs-symbol, .hljs-meta) {
+  color: var(--code-literal);
+}
+:is(codeblock, code-block) :is(.token.string, .token.char, .token.attr-value,
+  .token.regex, .token.url, .token.template-string, .hljs-string, .hljs-regexp,
+  .hljs-quote) {
+  color: var(--code-string);
+}
+:is(codeblock, code-block) :is(.token.attr-name, .token.property,
+  .hljs-attr, .hljs-attribute, .hljs-property, .hljs-variable,
+  .hljs-template-variable, .hljs-params) {
+  color: var(--code-attr);
+}
+:is(codeblock, code-block) :is(.token.comment, .token.doctype, .token.cdata,
+  .token.prolog, .hljs-comment) {
+  color: var(--code-comment);
+  font-style: italic;
+}
+:is(codeblock, code-block) :is(.token.punctuation, .token.operator,
+  .hljs-punctuation, .hljs-operator) {
+  color: var(--code-punct);
+}
+:is(codeblock, code-block) :is(.token.inserted, .hljs-addition) { color: var(--sb-success); }
+:is(codeblock, code-block) :is(.token.deleted, .hljs-deletion)  { color: var(--sb-danger); }
+
+/* Inline code — <code> outside a <pre> renders as a subtle chip */
+:where(code) {
+  font-family: var(--sb-font-mono);
+  font-size: 0.85em;
+}
+:where(:not(pre)) > code {
+  padding: 2px 5px;
+  border-radius: var(--radius, var(--sb-radius));
+  background: var(--sb-fill-track);
+  color: var(--sb-text-strong);
+}
+
+/* Utilities --------------------------------------------------------------------------- */
+.dot-grid {
+  background-image: radial-gradient(light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08)) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Reduced motion — kill decorative transitions; keep the spinner rotating
+   (it carries meaning) but drop the dash morph ------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  button, button::before, button::after, button svg,
+  a, .link,
+  input, textarea, select,
+  progressbar::after, progress-bar::after {
+    transition-duration: 0.01ms !important;
+  }
+  loadingspinner::after, loading-spinner::after {
+    animation: sb-spin 2s linear infinite;
+  }
+}
+
+} /* @layer snowball */

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snowball — Components (snowball.css)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="snowball.css" />
+  <link rel="stylesheet" href="snowball.config.css" />
+  <style>
+    /* Demo-page scaffolding only — not part of the design system */
+    section, header, footer { max-width: 64rem; margin: 0 auto; padding: 5rem 2.5rem; }
+    hr { max-width: 64rem; margin: 0 auto; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; }
+    .stack { display: flex; flex-direction: column; gap: 2.5rem; }
+    .micro-label { display: block; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.1.0 · snowball.css</p>
+    <h1>Components,<br>without the class soup.</h1>
+    <p class="hero-desc" style="margin-top: 2rem;">
+      Every component from <a href="design.md">design.md</a> as a semantic tag or a one-attribute
+      button. Compare with the Tailwind version in <a href="preview.html">preview.html</a> —
+      in the dark theme they should be visually identical.
+    </p>
+  </header>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Buttons</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;button variant="…"&gt;</code> — a bare <code>&lt;button&gt;</code> renders as secondary.
+    </p>
+    <div class="row">
+      <button variant="primary">Get Started</button>
+      <button variant="secondary">Learn More</button>
+      <button variant="danger">Delete Project</button>
+      <button variant="ghost">Cancel</button>
+      <button variant="icon" aria-label="Copy">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+      </button>
+      <button variant="primary" disabled>Disabled</button>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Stat Cards</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;statdelta up&gt;</code> / <code>&lt;statdelta down&gt;</code> / bare for neutral.
+    </p>
+    <div class="row" style="align-items: stretch;">
+      <statcard>
+        <statlabel>Revenue</statlabel>
+        <statvalue>$24.8k</statvalue>
+        <statdelta up>+12.4%</statdelta>
+      </statcard>
+      <statcard>
+        <statlabel>Churn</statlabel>
+        <statvalue>3.1%</statvalue>
+        <statdelta down>−0.6pp</statdelta>
+      </statcard>
+      <statcard>
+        <statlabel>Active projects</statlabel>
+        <statvalue>12</statvalue>
+        <statdelta>unchanged</statdelta>
+      </statcard>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Badges, Indicators &amp; Progress</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;tag&gt;</code>, <code>&lt;progressbar&gt;</code>, <code>&lt;loadingspinner size="…"&gt;</code>.
+    </p>
+    <div class="stack">
+      <div>
+        <span class="micro-label">Tag / Badge</span>
+        <div class="row" style="gap: 0.75rem;">
+          <tag>beta</tag>
+          <tag>v1.1.0</tag>
+          <tag>draft</tag>
+        </div>
+      </div>
+
+      <div>
+        <span class="micro-label">Progress Bar — 60%</span>
+        <progressbar style="--value: 60%" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></progressbar>
+      </div>
+
+      <div>
+        <span class="micro-label">Loading Spinner — sm / default / lg / xl / custom 56px</span>
+        <div class="row">
+          <loadingspinner size="sm"></loadingspinner>
+          <loadingspinner></loadingspinner>
+          <loadingspinner size="lg"></loadingspinner>
+          <loadingspinner size="xl"></loadingspinner>
+          <loadingspinner style="--size: 56px"></loadingspinner>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Inputs &amp; Controls</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      State lives entirely in <code>aria-checked</code> — the click handler below is one line.
+    </p>
+    <div class="stack">
+      <div>
+        <span class="micro-label">Toggle Switch</span>
+        <div class="row">
+          <button role="switch" aria-checked="true" aria-label="Email notifications"></button>
+          <button role="switch" aria-checked="false" aria-label="Marketing emails"></button>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Checkbox</span>
+        <div class="row">
+          <button role="checkbox" aria-checked="true" aria-label="Accept terms"></button>
+          <button role="checkbox" aria-checked="false" aria-label="Subscribe to updates"></button>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Radio — one tab stop, arrow keys move selection</span>
+        <div class="row" role="radiogroup" aria-label="Example options">
+          <button role="radio" aria-checked="true" aria-label="Option one"></button>
+          <button role="radio" aria-checked="false" aria-label="Option two"></button>
+          <button role="radio" aria-checked="false" aria-label="Option three"></button>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Text Input</span>
+        <div class="row" style="align-items: flex-start;">
+          <input type="text" placeholder="Project name" aria-label="Project name" style="max-width: 14rem;" />
+          <input type="text" value="Snowball" aria-label="Project name" style="max-width: 14rem;" />
+          <input type="text" placeholder="Disabled" aria-label="Disabled example" disabled style="max-width: 14rem;" />
+        </div>
+        <div style="margin-top: 1rem; max-width: 14rem;">
+          <input type="email" value="not-an-email" aria-label="Email" aria-invalid="true" aria-describedby="email-error" />
+          <p id="email-error" class="muted-desc" style="color: var(--sb-danger-text); margin-top: 0.5rem;">Enter a valid email address.</p>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Textarea &amp; Select — fully styled dropdown where <code>base-select</code> is supported</span>
+        <div class="row" style="align-items: flex-start;">
+          <textarea placeholder="Describe the change…"></textarea>
+          <select aria-label="Environment">
+            <option>Production</option>
+            <option>Staging</option>
+            <option>Development</option>
+            <option>Preview</option>
+            <option>Local</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Cards</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;card&gt;</code> for the standard surface, <code>&lt;card quiet&gt;</code> on busy backgrounds.
+    </p>
+    <div class="row" style="align-items: stretch;">
+      <card style="max-width: 20rem;">
+        <h3 style="font-size: 1.125rem; font-weight: 600;">Standard card</h3>
+        <p class="muted-desc" style="margin-top: 0.5rem;">
+          Default surface fill with the card hairline. Works for panels, list rows, and settings groups.
+        </p>
+      </card>
+      <card quiet class="dot-grid" style="max-width: 20rem;">
+        <h3 style="font-size: 1.125rem; font-weight: 600;">Quiet card</h3>
+        <p class="muted-desc" style="margin-top: 0.5rem;">
+          Faintest fill and quietest hairline — for cards sitting on the dot-grid or other busy backgrounds.
+        </p>
+      </card>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Code Block</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;codeblock lang="…"&gt;</code> wraps a normal <code>&lt;pre&gt;&lt;code&gt;</code>.
+      A copy-to-clipboard button is part of the default anatomy — the script below injects
+      one into every block; opt out per block with <code>nocopy</code>, as the diff sample does.
+      Token colors target Prism, highlight.js, and Shiki output — this sample is
+      hand-tokenized with Prism classes to show the palette without a bundled highlighter.
+    </p>
+    <codeblock lang="js" style="max-width: 36rem;">
+<pre><code><span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">sync</span><span class="token punctuation">(</span>project<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> res <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span><span class="token template-string">`/api/projects/${project.id}`</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>res<span class="token punctuation">.</span><span class="token property">ok</span><span class="token punctuation">)</span> <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">Error</span><span class="token punctuation">(</span><span class="token string">"sync failed"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// hydrate the cache</span>
+<span class="token punctuation">}</span></code></pre>
+    </codeblock>
+
+    <span class="micro-label" style="margin-top: 2.5rem;">Diff — the only colored tokens · <code>nocopy</code></span>
+    <codeblock lang="diff" nocopy style="max-width: 36rem;">
+<pre><code><span class="token deleted">- statusColor: 'blue'</span>
+<span class="token inserted">+ statusColor: 'emerald'</span></code></pre>
+    </codeblock>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Flexibility</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      Every surface honors local <code>--radius</code> and <code>--border</code> overrides;
+      sizes and proportions stay fixed. Retheme globally by uncommenting tokens in
+      <a href="snowball.config.css">snowball.config.css</a>.
+    </p>
+    <div class="stack">
+      <div>
+        <span class="micro-label">--radius</span>
+        <div class="row">
+          <button variant="primary">Default radius</button>
+          <button variant="primary" style="--radius: 0">--radius: 0</button>
+          <button variant="primary" style="--radius: 9999px">--radius: 9999px</button>
+          <card style="--radius: 4px; max-width: 14rem;">
+            <span class="micro-label" style="margin: 0;">card · --radius: 4px</span>
+          </card>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">--border</span>
+        <div class="row">
+          <button>Default border</button>
+          <button style="--border: 2px">--border: 2px</button>
+          <button variant="danger" style="--border: 2px">danger · 2px</button>
+          <card style="--border: 2px; max-width: 14rem;">
+            <span class="micro-label" style="margin: 0;">card · --border: 2px</span>
+          </card>
+          <button role="checkbox" aria-checked="false" style="--border: 2px" aria-label="2px checkbox"></button>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Theme — data-theme on &lt;html&gt; · default follows the OS</span>
+        <div class="row">
+          <button onclick="document.documentElement.removeAttribute('data-theme')">Auto</button>
+          <button onclick="document.documentElement.setAttribute('data-theme', 'light')">Force light</button>
+          <button onclick="document.documentElement.setAttribute('data-theme', 'dark')">Force dark</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top: 1px solid var(--sb-line-card);">
+    <p class="muted-desc">Snowball Design System — snowball.css</p>
+  </footer>
+
+  <script>
+    // The entire interactivity layer: flip aria-checked, CSS does the rest.
+    document.querySelectorAll('[role="switch"], [role="checkbox"]').forEach(btn =>
+      btn.addEventListener('click', () =>
+        btn.setAttribute('aria-checked', btn.getAttribute('aria-checked') !== 'true')));
+
+    // Radios: exactly one checked per radiogroup, and the group is a single
+    // tab stop — the selected radio carries tabindex="0", the rest -1, and
+    // Arrow keys move both focus and selection (roving tabindex).
+    document.querySelectorAll('[role="radiogroup"]').forEach(group => {
+      const radios = [...group.querySelectorAll('[role="radio"]')];
+      const select = btn => radios.forEach(r => {
+        r.setAttribute('aria-checked', r === btn);
+        r.tabIndex = r === btn ? 0 : -1;
+        if (r === btn) r.focus();
+      });
+      radios.forEach(r => { r.tabIndex = r.getAttribute('aria-checked') === 'true' ? 0 : -1; });
+      radios.forEach(btn => btn.addEventListener('click', () => select(btn)));
+      group.addEventListener('keydown', e => {
+        const i = radios.indexOf(document.activeElement);
+        if (i < 0) return;
+        let j = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % radios.length;
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   j = (i - 1 + radios.length) % radios.length;
+        if (j !== null) { e.preventDefault(); select(radios[j]); }
+      });
+    });
+
+    // Copy buttons: every code block gets one by default; <codeblock nocopy>
+    // opts out. data-copied drives the icon→checkmark swap in CSS.
+    const copyIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
+    document.querySelectorAll('codeblock:not([nocopy]), code-block:not([nocopy])').forEach(block => {
+      const btn = document.createElement('button');
+      btn.setAttribute('copy', '');
+      btn.setAttribute('aria-label', 'Copy code');
+      btn.innerHTML = copyIcon;
+      btn.addEventListener('click', () =>
+        navigator.clipboard.writeText(block.querySelector('pre').innerText).then(() => {
+          btn.setAttribute('data-copied', '');
+          clearTimeout(btn._copiedTimer);
+          btn._copiedTimer = setTimeout(() => btn.removeAttribute('data-copied'), 1500);
+        }));
+      block.prepend(btn);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,499 +1,498 @@
 ---
 Name: snowball design system
-Description: A minimalist, dark-themed design system optimized for readability and high-contrast interactions. Made for accessible, modern web interfaces with a focus on typography and subtle visual cues.
-Version: 1.0.0
+Description: A minimalist, modern design system in a single standalone stylesheet — full light and dark themes that follow the OS by default, forceable either way. Built for accessible, typography-focused web interfaces using semantic HTML, no framework required.
+Version: 1.3.0
 Author: ffuffix
 ---
 
-# 🐇 Snowball 1.0.0
+# 🐇 Snowball 1.3.0
 
-This design system is built entirely on **Tailwind CSS**. 
+This design system ships as **one standalone stylesheet** — `snowball.css`. No Tailwind, no build step. You write plain semantic HTML and link the stylesheet; the components are styled by tag, attribute, and ARIA role.
+
+```html
+<link rel="stylesheet" href="snowball.css" />
+<!-- optional: theming knobs, loaded after -->
+<link rel="stylesheet" href="snowball.config.css" />
+```
+
+Inter is the intended typeface — load it (e.g. from Google Fonts) or override `--sb-font`. Everything else has a sensible system fallback.
 
 ---
 
 ## Instructions & Rules (System Directives)
-When generating UI components or layouts using this design system, you **must** adhere to the following rules:
-1. **Dark Theme Default**: The background of the canvas or page must always be dark (e.g., `bg-black` or `bg-[#0a0a0a]`). Most text styles use semi-transparent white (`text-white/55`, `text-white/65`) which is invisible on light backgrounds.
-2. **Typography strictly Inter**: Ensure the parent element or body has `font-sans` (configured to Inter) applied.
-3. **No Arbitrary Colors**: Do not introduce random Tailwind colors (like `bg-blue-500` or `text-gray-300`). Stick strictly to the monochrome (white/black) palette, using only the canonical opacity steps below, plus the documented `red` accents for danger / error and the success emerald (see *Success accent* in Foundation) for positive / confirmation states.
-   - **Text opacity**: `/35` (micro-label, footnote, table caption), `/40` (de-emphasized span inside a hero title), `/55` (muted), `/65` (link rest), `/80` (body), `/90` (near-primary), full white for primary.
-   - **Surface fill**: `/[0.01]` (faintest card fill — for cards sitting on a busy background like the dot-grid), `/[0.02]` (default card / panel fill), `/[0.03]`–`/[0.04]` (hover fill, progress track).
-   - **Border via inset shadow rgba**: `0.05`–`0.06` (quiet card hairline), `0.08` (default button / input hairline), `0.14`–`0.16` (hover / active hairline).
-   - Do not invent intermediate values (`/70`, `/[0.1]`, `0.18`). If a step seems missing, pick the nearest canonical one.
-4. **Touch Target Protection**: Interactive elements like buttons, checkboxes, and toggles use pseudo-elements for larger tap targets (`before:absolute before:-inset-2 before:content-['']`). Do not remove these classes.
-5. **Preserve Transitions**: Always include transition properties (`transition-colors`, `transition-all`, `duration-300`) to keep animations smooth.
+When generating UI with this design system, you **must** follow these rules:
+
+1. **Use the semantic API — don't rebuild components.** Display-only components are custom tags (`<statcard>`, `<tag>`, `<progressbar>`, `<loadingspinner>`, `<codeblock>`, `<card>`, `<field>`, `<toast>`); interactive ones stay real elements styled by attribute or role (`<button variant="…">`, `role="switch|checkbox|radio"` + `aria-checked`, native `<input>`/`<textarea>`/`<select>`/`<input type="range">`, `<dialog>`, `[popover]`, `data-tooltip`). Reach for these before writing your own markup. In React/Vue use the hyphenated alias of each custom tag (`stat-card`, `loading-spinner`, `code-block`, …) so the framework treats them as custom elements.
+2. **Theme via tokens, never hardcoded colors.** Every color is a `light-dark()` pair, so the system follows the OS color scheme automatically. Do **not** introduce arbitrary colors (`#3b82f6`, `rgb(...)`, a stray `blue`). The monochrome palette is built into the components; to change it, override the `--sb-*` tokens in `snowball.config.css`. The only chroma is the **red ⇄ emerald pair** (danger/error vs. success/positive) — a single structural slot where, anywhere one appears, the other is its natural opposite.
+3. **Typography is Inter.** Load Inter or set `--sb-font`; the type scale and weights are already wired into the tags and helper classes.
+4. **Geometry is fixed.** A component's size, padding, and proportions are not adjustable — adjust the surrounding layout instead. The only two shape knobs are corner radius (`--radius`) and hairline width (`--border`), settable per element or globally (see *Flexibility*).
+5. **Provide the interactivity; the CSS does the visuals.** Every component *renders* with zero JavaScript. State for interactive controls lives entirely in attributes — toggling a switch/checkbox is one `setAttribute` flipping `aria-checked`; radios use a roving tabindex; the code-block copy button and toast lifecycle are a few lines. Reference implementations of all of this live in the `<script>` at the bottom of `components.html` — copy them as-is. Never make a component's *appearance* depend on JS.
+6. **Don't fight the layer.** The whole sheet lives in `@layer snowball`, so any unlayered CSS you write overrides it without `!important`. Prefer overriding tokens over overriding rules.
 
 ---
 
 ## Foundation & Theme
 
-### Colors & Backgrounds
-- **Primary Page Background**: `bg-black` or `bg-[#09090b]`
-- **Card / Container Background**: `bg-white/[0.02]` with border `border border-white/[0.08]`
-- **Text Primary**: `text-white` or `text-white/90`
-- **Text Secondary / Muted**: `text-white/55`
-- **Accents**: White, transparent white overlays, soft red (`red-500`, `red-300`) for danger / error, and emerald (see *Success accent* below) for positive / confirmation states. Red and emerald are a **paired structural slot** — anywhere one appears (delta, status, badge), the other is the natural opposite.
-- **Success accent**: `text-emerald-400/90` (Tailwind's `emerald-400` resolves to `oklab(0.765 -0.169466 0.0510908)` — the same color, just expressed via the utility). Use for positive deltas, "copied to clipboard", build / sync success markers, and any state telling the user *something good just happened*. Do not pair this with neutral text in a single phrase — it should always carry meaning on its own (a label, a number, an icon).
+### Theme & color model
+Every color resolves through `light-dark()`, so by default the page follows the OS color scheme. Force a theme with `data-theme`:
+
+```html
+<html data-theme="dark">   <!-- whole page, the classic Snowball look -->
+<section data-theme="light"> <!-- just this subtree -->
+```
+
+A themed **subtree** must paint its own opaque background, because the surface fills are translucent and assume one:
+```html
+<aside data-theme="light" style="background: var(--sb-bg)"> … </aside>
+```
+Browsers without `light-dark()` (pre-2024) are not supported.
 
 ### Tokens
-The same values recur across every component. Reach for these before inventing new ones.
+The components are built from a small set of tokens. You rarely set these directly — the semantic markup pulls them — but reach for them when building a **custom surface** (a bespoke panel using `var(--sb-fill)` + a hairline), and override them in `snowball.config.css` to retheme. Never invent intermediate values; pick the nearest canonical token.
+
+**Text (opacity steps, here shown for the dark theme):**
+
+| Token | Step | Used for |
+| :--- | :--- | :--- |
+| `--sb-text` | full | Primary text, headings, metric values |
+| `--sb-text-strong` | /90 | Near-primary body |
+| `--sb-text-body` | /80 | Body paragraphs |
+| `--sb-text-link` | /65 | Link rest state |
+| `--sb-text-muted` | /55 | Muted / secondary, descriptions |
+| `--sb-text-dim` | /40 | De-emphasized span inside a hero title |
+| `--sb-text-micro` | /50 | Micro-label, footnote, stat label, field hint, placeholder — the WCAG-AA floor for small text |
+
+**Surface fills:**
+
+| Token | Step | Used for |
+| :--- | :--- | :--- |
+| `--sb-fill-faint` | /[0.01] | Faintest card fill (cards on a busy / dot-grid background) |
+| `--sb-fill` | /[0.02] | Default card / panel / input fill |
+| `--sb-fill-hover` | /[0.03] | Hover fill |
+| `--sb-fill-track` | /[0.04] | Progress / slider track, tag fill |
+
+**Hairlines** (rendered as inset box-shadows, composed from `--border` width × color):
+
+| Token | Step | Used for |
+| :--- | :--- | :--- |
+| `--sb-line-quiet` | /[0.05] | Quiet card hairline (cards on busy backgrounds) |
+| `--sb-line-card` | /[0.06] | Default card hairline |
+| `--sb-line` | /[0.08] | Default button / input hairline |
+| `--sb-line-strong` | /[0.16] | Hover / active / focus hairline |
+| `--sb-line-danger` / `--sb-line-danger-strong` | — | Danger button & invalid-input hairline (rest / hover) |
+
+**Accents** — `--sb-success` (emerald) and `--sb-danger` / `--sb-danger-text` (red) are the paired slot; change them together. `--sb-solid` / `--sb-on-solid` are the inverted surface (primary button, checked checkbox, toggle-on track).
+
+**Radii:**
 
 | Token | Value | Used for |
 | :--- | :--- | :--- |
-| **Radius / small** | `rounded` | Tags, badges |
-| **Radius / control** | `rounded-[4px]` | Checkboxes |
-| **Radius / button** | `rounded-md` | Buttons, icon buttons |
-| **Radius / card** | `rounded-xl` | Cards, panels, surface containers |
-| **Radius / pill** | `rounded-full` | Toggles, progress bars, avatars |
-| **Border / card** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]` | Card hairline (use `0.05` for cards on busy backgrounds) |
-| **Border / rest** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]` | Default 1px hairline for buttons / inputs |
-| **Border / hover** | `shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]` | Hover / active hairline |
-| **Border / danger rest** | `shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)]` | Danger button rest |
-| **Border / danger hover** | `shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]` | Danger button hover |
-| **Tap target** | `relative before:absolute before:-inset-2 before:content-['']` | All small interactive elements (`-inset-3` for toggles/checkboxes) |
-| **Transition / colors** | `transition-colors duration-200` | Background / text color changes only |
-| **Transition / all** | `transition-all duration-300` | When border / shadow / position also animates |
+| `--sb-radius` | `0.25rem` | Tags, badges |
+| `--sb-radius-control` | `4px` | Checkboxes |
+| `--sb-radius-button` | `0.375rem` | Buttons, inputs |
+| `--sb-radius-card` | `0.75rem` | Cards, panels, surfaces |
+| `--sb-radius-pill` | `9999px` | Toggles, progress, avatars |
 
 ### Flexibility
-This document specifies the canonical dark theme. snowball.css implements every color as a `light-dark()` pair, follows the OS color scheme by default, and supports forcing a theme with `data-theme="dark"` (the classic Snowball look) or `data-theme="light"` — on `<html>` for the whole page, or on any element to theme just that subtree (give a themed subtree an opaque background, e.g. `background: var(--sb-bg)`; the translucent fills assume it). It also honors `prefers-reduced-motion` and lives in `@layer snowball`, so any unlayered consumer rule overrides it. The Tailwind reference markup in this file is dark-only.
+Corner radius and hairline width are the two shape knobs a consumer may adjust. Both work **per element** and **globally**:
 
-Corner radius and border (hairline) width are the two shape knobs a consumer may adjust — swap the radius token for another canonical step, or thicken the hairline (in Tailwind, change the inset-shadow spread, e.g. `shadow-[inset_0_0_0_2px_…]`; because hairlines are inset shadows, this never changes a component's outer size). In snowball.css both knobs work per element (`style="--radius: 4px; --border: 2px"` on any surface) and globally (`--sb-radius-*`, `--sb-border-width`); `snowball.config.css` lists every global token at its default, ready to uncomment. Everything else about a component's geometry — its size, padding, and proportions — is fixed: do not stretch, shrink, or re-space components to fit a layout; adjust the layout instead.
+```html
+<card style="--radius: 4px; --border: 2px"> … </card>   <!-- this element only -->
+```
+```css
+/* globally, in snowball.config.css — every knob is listed at its default, ready to uncomment */
+:root { --sb-radius-card: 0.5rem; --sb-border-width: 2px; }
+```
+Because hairlines are inset box-shadows, thickening `--border` never changes a component's outer size. Everything else about a component's geometry is fixed — do not stretch, shrink, or re-space components; adjust the layout instead.
 
-### Spacing scale
-Components stick to a narrow set of paddings to keep rhythm consistent.
+### Spacing
+Components carry their own padding (standard button `px-4 py-2`-equivalent, icon button a `2.25rem` square, tag `~3px/8px`). You don't set it — keep rhythm consistent by leaving component internals alone and spacing components apart with your layout.
 
-| Role | Padding |
-| :--- | :--- |
-| **Standard button** | `px-4 py-2` |
-| **Ghost / compact button** | `px-3 py-1.5` |
-| **Icon button** | `w-9 h-9` (square) |
-| **Tag / badge** | `px-2 py-[3px]` |
+### Accessibility & robustness
+The system is built to stay usable beyond the happy path:
+
+- **Contrast.** Text tokens from `--sb-text-micro` upward meet WCAG AA (4.5:1) for small text in both themes. `--sb-text-dim` is reserved for *large* hero text (the 3:1 threshold) and decorative glyphs — don't use it for body copy.
+- **Reduced motion.** Decorative transitions collapse under `prefers-reduced-motion: reduce`; the spinner keeps rotating (it carries meaning) but drops the dash morph.
+- **RTL.** Direction-sensitive placement (toggle thumb, select chevron, code-block label, copy button, toast stack) uses logical properties, so the system mirrors correctly under `dir="rtl"`.
+- **Hit targets.** Every `<button>` carries an invisible expanded hit area, so a tap or click lands even when it falls slightly off the visible control.
+- **`.sr-only`.** A visually-hidden utility for accessible names and live-region status text (e.g. a spinner's "Loading…").
 
 ---
 
 ## Typography
 
-Use the following classes for text elements to maintain strict visual hierarchy.
+Headings are styled by tag; everything else has a helper class. (Each heading style also has a class — `.h1`, `.h2`, `.h3` — for when you need the look without the document outline.)
 
-| Element / Role | Tailwind Classes | Description / Example Usage |
+| Element / Role | Markup | Notes |
 | :--- | :--- | :--- |
-| **Page Title** (Large) | `text-6xl sm:text-8xl md:text-9xl font-semibold tracking-tight text-white leading-[0.9]` | Hero headings, high-impact titles |
-| **H1** | `text-5xl sm:text-7xl md:text-8xl font-semibold tracking-tight text-white leading-[0.95]` | Standard main section header |
-| **H2** | `text-4xl sm:text-5xl font-semibold tracking-tight text-white` | Secondary section header |
-| **H3** | `text-2xl sm:text-3xl tracking-tight text-white` | Subsection header |
-| **Paragraph / Body** | `text-base sm:text-lg max-w-xl leading-relaxed text-white/80` | Readable body paragraphs |
-| **Title Description** | `text-white/55 text-base sm:text-lg max-w-xl leading-relaxed` | Default subtitle, paired with H2 / H3. For hero H1 / Page Title pairings, use the larger variant in *Descriptions for Large Titles* below. |
-| **Muted Description** | `text-[13px] sm:text-sm leading-relaxed text-white/55 line-clamp-3` | Captions, card descriptions, small text |
-| **Metric Value** | `text-3xl font-medium tabular-nums leading-none text-white` | Large number inside a Stat Card |
-| **Metric Delta** | `text-[11px] tabular-nums` paired with `text-emerald-400/90` (positive) or `text-red-300/90` (negative) | Paired delta indicator below a Metric Value |
-| **Interactive Link** | `text-sm text-white/65 hover:text-white transition-colors duration-300` | Inline or navigation links |
+| **Page Title** (hero) | `<h1 class="page-title">` | Largest, high-impact title (`clamp` up to 8rem) |
+| **H1** | `<h1>` or `.h1` | Standard main header |
+| **H2** | `<h2>` or `.h2` | Section header |
+| **H3** | `<h3>` or `.h3` | Subsection header (lighter weight) |
+| **Body** | `<p>` | Readable paragraph, `--sb-text-body`, max-width ~36rem |
+| **Title Description** | `.title-desc` | Muted subtitle paired with H2 / H3 |
+| **Hero Description** | `.hero-desc` | Larger muted subtitle for an H1 / Page Title |
+| **Muted Description** | `.muted-desc` | Captions, card descriptions, small print |
+| **Micro-label** | `.micro-label` | 10px uppercase wide-tracked label (`--sb-text-muted`) |
+| **Metric Value** | `.metric-value` | Large tabular number inside a stat card |
+| **Link** | `<a>` or `.link` | `--sb-text-link` at rest → full on hover |
+
+For a de-emphasized span inside a big title, wrap it and set `color: var(--sb-text-dim)`.
 
 ---
 
 ## Components
 
 ### Choosing the right component
-Pick by **intent**, not by appearance. If a row matches what the user is trying to do, use that component.
+Pick by **intent**, not appearance. If a row matches what the user is trying to do, use that component.
 
 | Intent | Component |
 | :--- | :--- |
-| Primary call-to-action — the one thing on the page to do | **Primary Button** |
-| Alternative action shown next to a primary CTA | **Secondary Button** |
-| Destructive / irreversible action (delete, reset, leave) | **Danger Button** |
-| Cancel, dismiss, "not now", low-emphasis navigation | **Ghost Button** |
-| Icon-only action in a toolbar or row (copy, close, edit) | **Icon Button** |
-| Single metric paired with a positive / negative delta | **Stat Card** |
-| Status, category, or metadata label (read-only) | **Tag / Badge** |
-| Boolean preference that takes effect immediately | **Toggle Switch** |
-| Multi-select, opt-in, or form agreement | **Checkbox Button** |
-| Pick exactly one option from a small mutually exclusive set | **Radio Button** |
-| Free-form text entry, single line | **Text Input** |
-| Free-form text entry, multi-line | **Textarea** |
-| Pick one option from a long or unfamiliar list | **Select** |
-| Pick a numeric value from a continuous range | **Slider** |
-| Label + input + hint or error, stacked | **Field** |
-| Indeterminate in-progress state | **Loading Spinner** |
-| Determinate progress with a known percentage | **Progress Bar** |
-| Source code, config snippets, or terminal output | **Code Block** |
-| Blocking decision or focused task that interrupts the page | **Dialog** |
-| Secondary actions tucked behind a trigger | **Menu (Popover)** |
-| Clarify an icon-only or ambiguous control on hover / focus | **Tooltip** |
-| Transient, non-blocking feedback after an action | **Toast** |
+| Primary call-to-action — the one thing on the page to do | **`<button variant="primary">`** |
+| Alternative action next to a primary CTA | **`<button variant="secondary">`** (a bare `<button>` is secondary) |
+| Destructive / irreversible action (delete, reset, leave) | **`<button variant="danger">`** |
+| Cancel, dismiss, "not now", low-emphasis navigation | **`<button variant="ghost">`** |
+| Icon-only action in a toolbar or row (copy, close, edit) | **`<button variant="icon">`** |
+| A general bordered surface / panel / settings group | **`<card>`** (`<card quiet>` on busy backgrounds) |
+| Single metric paired with a positive / negative delta | **`<statcard>`** |
+| Status, category, or metadata label (read-only) | **`<tag>`** |
+| Tabular data — rows and columns | **`<table>`** (`<th num>` / `<td num>` right-align numeric columns) |
+| A person or entity's identity | **`<avatar>`** — overlap several with **`<avatargroup>`** |
+| A keyboard key or shortcut hint | **`<kbd>`** |
+| Boolean preference that takes effect immediately | **`role="switch"`** |
+| Multi-select, opt-in, or form agreement | **`role="checkbox"`** |
+| Pick exactly one from a small mutually exclusive set | **`role="radio"`** |
+| Free-form text entry, single line | **`<input type="text">`** |
+| Free-form text entry, multi-line | **`<textarea>`** |
+| Pick one option from a long or unfamiliar list | **`<select>`** |
+| Pick a numeric value from a continuous range | **`<input type="range">`** |
+| Label + input + hint or error, stacked | **`<field>`** |
+| Indeterminate in-progress state | **`<loadingspinner>`** |
+| Determinate progress with a known percentage | **`<progressbar>`** |
+| Placeholder for content that hasn't loaded yet | **`<skeleton>`** (`circle` for avatars) |
+| Source code, config snippets, terminal output | **`<codeblock>`** |
+| Blocking decision or focused task that interrupts the page | **`<dialog>`** |
+| Secondary actions tucked behind a trigger | **`[popover]` menu** |
+| Clarify an icon-only or ambiguous control on hover / focus | **`data-tooltip`** |
+| Transient, non-blocking feedback after an action | **`<toast>`** |
+| Persistent, in-flow status message or callout | **`<alert>`** (`success` / `danger` / neutral) |
+| Switch between views/panels in the same context | **`role="tablist"`** + `role="tab"` / `role="tabpanel"` |
+| Single-select among 2–4 inline options (view, density…) | **`<segmented role="radiogroup">`** |
+| Show / hide a section on demand | **`<details>`** + `<summary>` |
+| The user's location in the page hierarchy | **`<breadcrumbs>`** inside `<nav aria-label="Breadcrumb">` |
 
 ### Buttons
-All buttons feature an invisible expanded click area using the `before:` pseudo-element for accessibility.
+`<button variant="…">` — `primary`, `secondary`, `danger`, `ghost`, `icon`. A bare `<button>` renders as secondary. All buttons carry an invisible expanded tap target. Add `disabled` for the disabled state. Icon buttons need an `aria-label`.
 
-#### Primary Button
-*Best for primary call-to-actions.*
 ```html
-<button class="
-  inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium select-none relative
-  bg-white text-black hover:bg-white/90 active:bg-white/80 
-  transition-colors duration-200
-  before:absolute before:-inset-2 before:content-['']
-">
-  Get Started
+<button variant="primary">Get Started</button>
+<button variant="secondary">Learn More</button>
+<button variant="danger">Delete Project</button>
+<button variant="ghost">Cancel</button>
+<button variant="icon" aria-label="Copy">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
 </button>
-```
-
-#### Secondary Button
-*Best for secondary options, outline appearance.*
-```html
-<button class="
-  inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium select-none relative
-  text-white/80 hover:text-white hover:bg-white/[0.02]
-  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]
-  transition-all duration-300
-  before:absolute before:-inset-2 before:content-['']
-">
-  Learn More
-</button>
-```
-
-#### Danger Button
-*Best for destructive actions (e.g., delete, reset).*
-```html
-<button class="
-  inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium select-none relative
-  text-red-300 hover:text-red-200 hover:bg-red-500/[0.06]
-  shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)] hover:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]
-  transition-all duration-300
-  before:absolute before:-inset-2 before:content-['']
-">
-  Delete Project
-</button>
-```
-
-#### Ghost Button
-*Best for subtle, low-emphasis navigation or actions.*
-```html
-<button class="
-  inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-medium select-none relative
-  text-white/55 hover:text-white hover:bg-white/[0.03]
-  transition-colors duration-200
-  before:absolute before:-inset-2 before:content-['']
-">
-  Cancel
-</button>
-```
-
-#### Icon Button
-*Best for small, icon-only actions (e.g., close, edit).*
-(This example uses a copy icon from the Lucide icon set, but you can replace it with any SVG icon.)
-```html
-<button aria-label="Copy" class="inline-flex items-center justify-center w-9 h-9 rounded-md text-white/60 hover:text-white hover:bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition-all duration-300 relative before:absolute before:-inset-2 before:content-['']"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy w-3.5 h-3.5" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button>
 ```
 
 ### Cards
 
-#### Stat Card
-*One label, one number, one delta. The delta is the only place the success accent and red `red-300/90` appear as a pair — together they form a single bidirectional indicator (up vs. down, gained vs. lost, on-track vs. off-track). Never use the success accent here for a neutral or informational change — only when the direction of the delta is genuinely good.*
-
-*Uses the **card** radius (`rounded-xl`), the faintest **surface fill** (`/[0.01]`) since stat cards typically sit on the dot-grid background, and the quietest **card hairline** (`0.05`). The micro-label uses the `/35` text step.*
+#### Card
+`<card>` is the standard bordered surface (default fill + card hairline) for panels, list rows, and settings groups. `<card quiet>` uses the faintest fill and quietest hairline — for cards sitting on the dot-grid or another busy background.
 ```html
-<div class="
-  w-full max-w-[14rem] rounded-xl p-5 flex flex-col gap-1
-  bg-white/[0.01]
-  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]
-">
-  <span class="text-[10px] font-semibold uppercase tracking-widest text-white/35 whitespace-nowrap">
-    Revenue
-  </span>
-  <span class="text-3xl font-medium tabular-nums text-white leading-none mt-1">
-    $24.8k
-  </span>
-  <!-- Swap the delta color based on direction:    -->
-  <!--   positive → text-emerald-400/90            -->
-  <!--   negative → text-red-300/90                -->
-  <span class="text-[11px] tabular-nums mt-1 text-emerald-400/90">
-    +12.4%
-  </span>
-</div>
+<card>
+  <h3 style="font-size: 1.125rem; font-weight: 600;">Standard card</h3>
+  <p class="muted-desc" style="margin-top: 0.5rem;">Works for panels, list rows, and settings groups.</p>
+</card>
+```
+
+#### Stat Card
+One label, one number, one delta. `<statdelta up>` is the success accent, `<statdelta down>` the danger red, and a bare `<statdelta>` is neutral. The up/down pair is the only place success and danger appear *together*, forming a single bidirectional indicator — use a colored delta only when the direction is genuinely good or bad, never for a neutral change.
+```html
+<statcard>
+  <statlabel>Revenue</statlabel>
+  <statvalue>$24.8k</statvalue>
+  <statdelta up>+12.4%</statdelta>
+</statcard>
 ```
 
 ### Badges, Indicators & Progress
 
-#### Loading Spinner
-*A highly animated SVG spinner for loading states.*
+#### Tag / Badge
+An uppercase, wide-tracked label for statuses or metadata (read-only).
 ```html
-<svg class="w-5 h-5 text-white animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity="0.15" stroke-width="2" />
-  <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-    class="origin-center"
-    style="stroke-dasharray: 42 150; stroke-dashoffset: 0;">
-    <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="2s" repeatCount="indefinite"></animateTransform>
-    <animate attributeName="stroke-dasharray" values="0 150;42 150;42 150" keyTimes="0;0.5;1" dur="1.5s" repeatCount="indefinite"></animate>
-    <animate attributeName="stroke-dashoffset" values="0;-16;-59" keyTimes="0;0.5;1" dur="1.5s" repeatCount="indefinite"></animate>
-  </circle>
-</svg>
+<tag>beta</tag>
 ```
 
 #### Progress Bar
-*A subtle track containing a rounded indicator bar.*
+Determinate progress. Set the fill with `--value`; mirror it in the ARIA attributes and give it an `aria-label`.
 ```html
-<div class="w-full max-w-[10rem] h-1 bg-white/[0.04] rounded-full overflow-hidden shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]">
-  <!-- Set dynamic width on inner div for progress value -->
-  <div class="h-full bg-white/70 rounded-full transition-all duration-300" style="width: 60%;" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-</div>
+<progressbar style="--value: 60%" role="progressbar" aria-label="Upload" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></progressbar>
 ```
 
-#### Tag / Badge
-*An uppercase, wide-tracked tag for labels or statuses.*
+#### Loading Spinner
+Indeterminate state. Sizes `sm` / (default) / `lg` / `xl`, or a custom `--size`. A spinner is silent to screen readers: give a meaningful one `role="status"` + an `aria-label` (or pair an `aria-hidden` spinner with `.sr-only` status text), and mark purely decorative ones `aria-hidden="true"`.
 ```html
-<span class="inline-flex items-center px-2 py-[3px] text-[10px] font-semibold uppercase tracking-widest text-white/55 bg-white/[0.04] rounded whitespace-nowrap">
-  beta
-</span>
+<loadingspinner role="status" aria-label="Loading"></loadingspinner>
+<loadingspinner size="lg" aria-hidden="true"></loadingspinner>
+<loadingspinner style="--size: 56px" aria-hidden="true"></loadingspinner>
+```
+
+#### Skeleton
+A shimmering placeholder for content that's still loading. Unlike other components it's *meant* to be sized to what it replaces — set `width` / `height` (and `--radius` to taste); add `circle` for an avatar placeholder. The shimmer drops to a static fill under `prefers-reduced-motion`. Mark a loading region `aria-busy="true"` and `aria-hidden` the skeletons themselves so a screen reader isn't read a wall of empty placeholders.
+```html
+<skeleton style="width: 60%"></skeleton>
+<skeleton circle style="width: 2.25rem; height: 2.25rem"></skeleton>
 ```
 
 #### Code Block
-*A surface container for source code, paired with a monochrome syntax palette: opacity and weight carry the token hierarchy, and color appears only in diff lines (inserted / deleted — the success / danger pair). Syntax tokens come from whatever highlighter the host project uses (Prism, highlight.js, Shiki); snowball.css maps all three vocabularies to this palette. The optional `lang` attribute renders as a corner label.*
+`<codeblock lang="…">` wraps a normal `<pre><code>`; the optional `lang` shows as a corner label. Syntax colors target Prism (`.token.*`), highlight.js (`.hljs-*`), and Shiki — and plain un-highlighted code works too. The palette is monochrome: opacity and weight carry the hierarchy, and **color appears only in diff lines** (`.token.inserted` = success, `.token.deleted` = danger).
 
-*A copy-to-clipboard button is part of the default anatomy — include it unless copying makes no sense for the content (diff samples, terminal transcripts with prompts). On click, write the `<pre>`'s `innerText` to the clipboard and swap the copy icon for the checkmark for ~1.5s (same overshoot ease as the checkbox glyph); swap the button's `aria-label` to "Copied" for the same beat so screen readers hear the confirmation, not just sighted users. In snowball.css the button is `<button copy>` as the first child and the `nocopy` attribute on the block hides it; when the button is present the lang label steps left (`right-4` → `right-11`).*
+A copy-to-clipboard button is part of the default anatomy — the reference script in `components.html` injects one into every block (writes the `<pre>`'s text, swaps the icon for a checkmark and the `aria-label` to "Copied" for ~1.5s). Opt a block out with `nocopy` (use it for diffs and terminal transcripts).
 ```html
-<div class="relative rounded-xl bg-white/[0.02] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden">
-  <span class="absolute top-3 right-11 text-[10px] font-semibold uppercase tracking-widest text-white/35 select-none">js</span>
-  <button aria-label="Copy code" class="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors duration-200 hover:text-white hover:bg-white/[0.04] before:absolute before:-inset-2 before:content-['']">
-    <!-- copy icon, swapped for a check while copied -->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 transition-all duration-200" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 absolute text-white scale-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
-  </button>
-  <pre class="m-0 px-5 py-4 overflow-x-auto font-mono text-[13px] leading-[1.7] text-white/80"><code>…</code></pre>
-</div>
+<codeblock lang="js">
+<pre><code><span class="token keyword">const</span> x <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span></code></pre>
+</codeblock>
+
+<codeblock lang="diff" nocopy>
+<pre><code><span class="token deleted">- statusColor: 'blue'</span>
+<span class="token inserted">+ statusColor: 'emerald'</span></code></pre>
+</codeblock>
+```
+*Inline code (`<code>` outside a `<pre>`) renders as a subtle chip automatically.*
+
+### Data display
+
+#### Table
+A plain native `<table>`. Header cells are uppercase micro-labels, rows are separated by the standard hairline (composed from `--border` × `--sb-line-card` at the cell, so a local `--border` override still works). Add `num` to a `<th>`/`<td>` to right-align it and switch on tabular figures for numeric columns. Use `<caption>` for an accessible table name. Wrap the table in a horizontally-scrollable container if it can overflow on narrow screens.
+```html
+<table>
+  <caption>Recent deployments</caption>
+  <thead>
+    <tr><th>Project</th><th>Status</th><th num>Duration</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>snowball</td><td>Live</td><td num>1.2s</td></tr>
+    <tr><td>preview</td><td>Building</td><td num>0.8s</td></tr>
+  </tbody>
+</table>
 ```
 
-| Token role | Color | Extra |
-| :--- | :--- | :--- |
-| Keywords, booleans | `text-white` | `font-medium` |
-| Functions, types, tags | `text-white/90` | |
-| Numbers, constants | `text-white/90` | |
-| Strings, regex, URLs | `text-white/65` | |
-| Attribute / property names | `text-white/55` | |
-| Comments | `text-white/35` | `italic` |
-| Punctuation, operators | `text-white/40` | |
-| Diff inserted | success accent (`text-emerald-400/90`) | |
-| Diff deleted | `text-red-300/90` | |
+#### Avatar
+`<avatar>` is a fixed circle holding initials or an `<img>`. Sizes `sm` / (default) / `lg`. Overlap several with `<avatargroup>` — the gap between them is a ring painted in `--sb-bg`, so on a non-page surface set `--sb-bg` to that surface's color. An image avatar still needs `alt`; an initials avatar should carry an `aria-label` with the full name.
+```html
+<avatar aria-label="Ada Lovelace">AL</avatar>
+<avatar size="lg"><img src="…" alt="Ada Lovelace" /></avatar>
 
-*Inline code (a `<code>` outside a `<pre>`) renders as a subtle chip: `px-[5px] py-[2px] rounded bg-white/[0.04] text-white/90 font-mono text-[0.85em]`.*
+<avatargroup>
+  <avatar aria-label="Ada Lovelace">AL</avatar>
+  <avatar aria-label="Grace Hopper">GH</avatar>
+  <avatar aria-label="Alan Turing">AT</avatar>
+</avatargroup>
+```
+
+#### Keyboard key
+`<kbd>` renders a single key as a keycap chip; combine a few for a shortcut.
+```html
+<kbd>⌘</kbd> <kbd>K</kbd>
+```
 
 ### Inputs & Controls
 
-Every control needs an accessible name — a visible `<label>`, `aria-label`, or `aria-labelledby`. Icon-only and glyph-only controls (toggles, checkboxes, radios, icon buttons) have no text content, so without one a screen reader announces "switch, on" with no clue what it controls.
+Every control needs an accessible name — a visible `<label>` (via `<field>`), `aria-label`, or `aria-labelledby`. Glyph-only controls (switches, checkboxes, radios, icon buttons) have no text, so without one a screen reader announces "switch, on" with no clue what it controls.
+
+**Interactivity:** switches and checkboxes hold their entire state in `aria-checked` — flip it on click (one line; see `components.html`). The CSS animates the rest.
 
 #### Toggle Switch
-*Two states. Swap the track classes and the handle's `left` value together — never just one.*
 ```html
-<!-- State: ON -->
-<button role="switch" aria-checked="true" class="
-  inline-flex w-9 h-5 rounded-full relative items-center transition-colors duration-300
-  bg-white/85 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]
-  before:absolute before:-inset-3 before:content-['']
-">
-  <span class="absolute top-0.5 w-4 h-4 rounded-full bg-black shadow-[0_2px_6px_rgba(0,0,0,0.4)] transition-all duration-300" style="left: 18px;"></span>
-</button>
-
-<!-- State: OFF -->
-<button role="switch" aria-checked="false" class="
-  inline-flex w-9 h-5 rounded-full relative items-center transition-colors duration-300
-  bg-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]
-  before:absolute before:-inset-3 before:content-['']
-">
-  <span class="absolute top-0.5 w-4 h-4 rounded-full bg-white/55 shadow-[0_2px_6px_rgba(0,0,0,0.4)] transition-all duration-300" style="left: 2px;"></span>
-</button>
+<button role="switch" aria-checked="true" aria-label="Email notifications"></button>
+<button role="switch" aria-checked="false" aria-label="Marketing emails"></button>
 ```
 
-#### Checkbox Button
-*Two states. The unchecked state is border-only (inset shadow) with the checkmark scaled to zero; the checked state grows the white fill inward from the hairline (an inset-shadow spread of 8px covers the whole 16px control) and pops the black checkmark in with a slight overshoot. Keep the icon in the DOM in both states so the swap animates in both directions.*
+#### Checkbox
 ```html
-<!-- State: Checked -->
-<button role="checkbox" aria-checked="true" class="
-  inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300
-  shadow-[inset_0_0_0_8px_#fff]
-  before:absolute before:-inset-3 before:content-['']
-">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-black transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-100" aria-hidden="true">
-    <path d="M20 6 9 17l-5-5"></path>
-  </svg>
-</button>
-
-<!-- State: Unchecked -->
-<button role="checkbox" aria-checked="false" class="
-  inline-flex items-center justify-center w-4 h-4 rounded-[4px] relative transition-all duration-300
-  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
-  before:absolute before:-inset-3 before:content-['']
-">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-black transition-transform duration-300 scale-0" aria-hidden="true">
-    <path d="M20 6 9 17l-5-5"></path>
-  </svg>
-</button>
+<button role="checkbox" aria-checked="true" aria-label="Accept terms"></button>
+<button role="checkbox" aria-checked="false" aria-label="Subscribe to updates"></button>
 ```
 
 #### Radio Button
-*Same construction as the checkbox — inward-growing white fill, popping glyph — but circular (`rounded-full`) and with a black center dot instead of a checkmark. Exactly one radio per group carries `aria-checked="true"`. The group must be a single tab stop: the selected radio carries `tabindex="0"`, the rest `tabindex="-1"`, and Arrow keys move both focus and selection (roving tabindex — see the script in preview.html or components.html).*
+Wrap a set in `role="radiogroup"`. The group must be a **single tab stop**: the selected radio carries `tabindex="0"`, the rest `-1`, and Arrow keys move both focus and selection (roving tabindex — see the script in `components.html`). Exactly one radio per group is `aria-checked="true"`.
 ```html
-<!-- State: Selected -->
-<button role="radio" aria-checked="true" class="
-  inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300
-  shadow-[inset_0_0_0_8px_#fff]
-  before:absolute before:-inset-3 before:content-['']
-">
-  <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-100"></span>
-</button>
-
-<!-- State: Unselected -->
-<button role="radio" aria-checked="false" class="
-  inline-flex items-center justify-center w-4 h-4 rounded-full relative transition-all duration-300
-  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
-  before:absolute before:-inset-3 before:content-['']
-">
-  <span class="w-1.5 h-1.5 rounded-full bg-black transition-transform duration-300 scale-0"></span>
-</button>
+<div role="radiogroup" aria-label="Plan">
+  <button role="radio" aria-checked="true" aria-label="Option one"></button>
+  <button role="radio" aria-checked="false" aria-label="Option two"></button>
+  <button role="radio" aria-checked="false" aria-label="Option three"></button>
+</div>
 ```
 
 #### Text Input & Textarea
-*The standard hairline surface made editable. Focus is signaled by the brightened hairline (the same step the checkbox uses on hover) plus a faint fill lift — no outline ring. Disabled fields use `opacity-45 pointer-events-none`.*
+Plain `<input>` / `<textarea>`. Focus brightens the hairline and lifts the fill — no outline ring. Use `disabled` for the disabled state. Mark an invalid field with `aria-invalid="true"` (swaps to the danger hairline) and describe the error in text linked via `aria-describedby`.
 ```html
-<input type="text" placeholder="Project name" class="
-  w-full max-w-xs px-3.5 py-2 rounded-md outline-none transition-all duration-300
-  bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35
-  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]
-  hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]
-  focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
-" />
-```
-*Textarea is identical plus `min-h-18 resize-y` (vertical resize only — horizontal would break the layout).*
+<input type="text" placeholder="Project name" aria-label="Project name" />
+<textarea placeholder="Describe the change…"></textarea>
 
-*Invalid fields carry `aria-invalid="true"` and swap the hairline for the danger pair — the same relationship the danger button has to secondary. Describe the error in text linked via `aria-describedby`.*
-```html
-<input type="email" value="not-an-email" aria-invalid="true" aria-describedby="email-error" class="
-  w-full max-w-xs px-3.5 py-2 rounded-md outline-none transition-all duration-300
-  bg-white/[0.02] text-[13px] text-white/80 placeholder:text-white/35
-  shadow-[inset_0_0_0_1px_rgba(239,68,68,0.22)]
-  hover:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]
-  focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(239,68,68,0.4)]
-" />
-<p id="email-error" class="text-[13px] text-red-300/90 leading-relaxed mt-2">Enter a valid email address.</p>
+<input type="email" value="not-an-email" aria-label="Email" aria-invalid="true" aria-describedby="email-error" />
+<p id="email-error" class="muted-desc" style="color: var(--sb-danger-text);">Enter a valid email address.</p>
 ```
 
 #### Select
-*A native `<select>` with `appearance-none` and an inline SVG chevron, so the closed control matches the text input exactly. Give every `<option>` an explicit solid background and text color — options don't inherit the translucent fills, and the UA defaults are unreadable on dark. Beware the `background` shorthand on hover/focus states: it wipes the chevron `background-image`; only ever touch `background-color`. snowball.css additionally upgrades the open dropdown where `appearance: base-select` is supported (Chromium): the panel is styled via `::picker(select)` as a hairline surface with quiet options, the chevron (`::picker-icon`) rotates while open, and the panel fades in; other engines keep the recolored native dropdown.*
+A native `<select>`, restyled to match the text input with an inline chevron. Where `appearance: base-select` is supported (Chromium), the open dropdown is upgraded to a hairline panel via `::picker(select)`; other engines keep the recolored native dropdown. Give each `<option>` plain text — the stylesheet handles the rest.
 ```html
-<select class="
-  w-full max-w-xs appearance-none cursor-pointer pl-3.5 pr-9 py-2 rounded-md outline-none transition-all duration-300
-  bg-white/[0.02] text-[13px] text-white/80
-  shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]
-  hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]
-  focus:bg-white/[0.03] focus:text-white focus:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)]
-  bg-no-repeat bg-[right_0.75rem_center] bg-[length:0.875rem]
-  bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27none%27%20stroke=%27%23888888%27%20stroke-width=%272%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27m6%209%206%206%206-6%27/%3E%3C/svg%3E')]
-">
-  <option class="bg-neutral-950 text-white/80">Production</option>
-  <option class="bg-neutral-950 text-white/80">Staging</option>
+<select aria-label="Environment">
+  <option>Production</option>
+  <option>Staging</option>
+  <option>Development</option>
 </select>
 ```
 
 #### Slider
-*A native `<input type="range">` that reuses the progress-bar language: 4px pill track on the track fill, with a solid 1rem thumb (the inverted surface, like the primary button). The thumb compresses slightly while dragged, mirroring the checkbox's `:active` scale.*
+A native `<input type="range">` reusing the progress-bar track language with a solid inverted thumb that compresses slightly while dragged.
 ```html
-<input type="range" min="0" max="100" value="60" class="
-  w-full max-w-xs h-5 appearance-none bg-transparent cursor-pointer
-  [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/[0.04]
-  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:-mt-1.5
-  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.4)]
-  active:[&::-webkit-slider-thumb]:scale-90 [&::-webkit-slider-thumb]:transition-transform
-" />
+<input type="range" min="0" max="100" value="60" aria-label="Volume" />
 ```
-*(Duplicate the track/thumb rules for `::-moz-range-track` / `::-moz-range-thumb`; Firefox also supports `::-moz-range-progress` for a filled lead segment.)*
 
 #### Field
-*The stacking pattern for forms: micro-label, then the control, then a hint — or an error when `aria-invalid` is set. Always link hint/error text with `aria-describedby`.*
+The stacking pattern for forms: `<label>`, then the control, then a `<fieldhint>` — or a `<fielderror>` when the control is `aria-invalid`. Always link the hint/error with `aria-describedby`.
 ```html
-<div class="flex flex-col gap-2 w-full max-w-xs">
-  <label for="project" class="text-[10px] font-semibold uppercase tracking-widest text-white/55">Project name</label>
-  <input id="project" type="text" aria-describedby="project-hint" class="…text input classes…" />
-  <p id="project-hint" class="text-xs leading-normal text-white/35">Lowercase letters and dashes only.</p>
-</div>
+<field>
+  <label for="project">Project name</label>
+  <input id="project" type="text" placeholder="my-project" aria-describedby="project-hint" />
+  <fieldhint id="project-hint">Lowercase letters and dashes only.</fieldhint>
+</field>
+
+<field>
+  <label for="email">Email</label>
+  <input id="email" type="email" value="not-an-email" aria-invalid="true" aria-describedby="email-err" />
+  <fielderror id="email-err">Enter a valid email address.</fielderror>
+</field>
 ```
-*In snowball.css this is `<field> <label/> <input/> <fieldhint/> </field>`, swapping `<fieldhint>` for `<fielderror>` on failure.*
+
+### Navigation & disclosure
+
+#### Tabs
+`role="tablist"` holds `button[role="tab"]`s; each tab `aria-controls` a `role="tabpanel"`, and the active tab is `aria-selected="true"` with a matching underline. The tablist is a **single tab stop** (roving tabindex, like radios): the selected tab is `tabindex="0"`, the rest `-1`, Arrow keys move selection, and inactive panels carry `hidden`. Reference script in `components.html`.
+```html
+<div role="tablist" aria-label="Project">
+  <button role="tab" id="t-overview" aria-controls="p-overview" aria-selected="true">Overview</button>
+  <button role="tab" id="t-activity" aria-controls="p-activity" aria-selected="false" tabindex="-1">Activity</button>
+</div>
+<div role="tabpanel" id="p-overview" aria-labelledby="t-overview">…</div>
+<div role="tabpanel" id="p-activity" aria-labelledby="t-activity" hidden>…</div>
+```
+
+#### Segmented control
+A compact single-select for 2–4 short options (a view or density switch). It's a `<segmented role="radiogroup">` of `button[role="radio"]`s — so it reuses the radio roving-tabindex script, with the round-dot look overridden to filled segments.
+```html
+<segmented role="radiogroup" aria-label="View">
+  <button role="radio" aria-checked="true">Board</button>
+  <button role="radio" aria-checked="false" tabindex="-1">List</button>
+  <button role="radio" aria-checked="false" tabindex="-1">Timeline</button>
+</segmented>
+```
+
+#### Accordion
+A native `<details>` rendered as a bordered surface; `<summary>` is the header with a chevron that rotates on open. Works with zero JS. Keep the disclosed body in a single element.
+```html
+<details>
+  <summary>What's included?</summary>
+  <p class="muted-desc">Every component, both themes, and the reference interactivity snippets.</p>
+</details>
+```
+
+#### Breadcrumbs
+`<breadcrumbs>` of `<a>` links with generated `/` separators; the current page is the last child carrying `aria-current="page"` (render it as plain text, not a link). Wrap it in `<nav aria-label="Breadcrumb">` for the landmark.
+```html
+<nav aria-label="Breadcrumb">
+  <breadcrumbs>
+    <a href="#">Home</a>
+    <a href="#">Projects</a>
+    <span aria-current="page">Snowball</span>
+  </breadcrumbs>
+</nav>
+```
+
+### Feedback
+
+#### Alert / Callout
+A persistent, in-flow message — the quieter counterpart to the transient `<toast>`. `<alert success>` / `<alert danger>` tint the leading dot (the same paired slot the toast uses); a bare `<alert>` is neutral. Add an `<alerttitle>` for a heading line. Because color alone can't carry meaning, make the text say what the dot implies.
+```html
+<alert>
+  <alerttitle>Heads up</alerttitle>
+  <p>Your trial ends in three days.</p>
+</alert>
+
+<alert success><p>Changes saved.</p></alert>
+
+<alert danger>
+  <alerttitle>Couldn't save</alerttitle>
+  <p>Check your connection and try again.</p>
+</alert>
+```
 
 ### Overlays
-One surface, four shapes: a floating panel (solid `bg-neutral-950`, strong hairline border, soft drop shadow) — the same language the select dropdown uses. All overlay motion is a short fade/slide and must be gated behind `prefers-reduced-motion: no-preference`.
+One panel surface (solid `--sb-panel` background, strong hairline, soft drop shadow), four shapes. All overlay motion is a short fade/slide, gated behind `prefers-reduced-motion: no-preference`.
 
 #### Dialog
-*A native `<dialog>` opened with `showModal()` — focus trapping, Esc, and `method="dialog"` close come free. The backdrop dims and blurs the page.*
+A native `<dialog>` opened with `showModal()` — focus trapping, Esc, and `method="dialog"` close come free. The backdrop dims and blurs the page.
 ```html
-<dialog class="m-auto w-[min(28rem,calc(100vw-2.5rem))] p-6 rounded-xl bg-neutral-950 text-white/80
-  border border-white/[0.16] shadow-[0_24px_64px_rgba(0,0,0,0.6)]
-  backdrop:bg-black/55 backdrop:backdrop-blur-md">
-  <h3 class="text-lg font-semibold text-white">Delete project?</h3>
-  <p class="text-sm text-white/55 leading-relaxed mt-2 max-w-none">This permanently removes the project and all of its data.</p>
-  <footer class="flex justify-end gap-3 mt-6">
-    <form method="dialog"><button class="…ghost button…">Cancel</button></form>
-    <button class="…danger button…">Delete</button>
+<button onclick="document.getElementById('confirm').showModal()">Delete project…</button>
+<dialog id="confirm">
+  <h3>Delete project?</h3>
+  <p class="muted-desc" style="margin-top: 0.5rem;">This permanently removes the project and all of its data.</p>
+  <footer>
+    <form method="dialog"><button variant="ghost">Cancel</button></form>
+    <button variant="danger">Delete</button>
   </footer>
 </dialog>
 ```
 
 #### Menu (Popover)
-*The `popover` attribute provides open/close, light-dismiss, and the top layer; CSS anchor positioning pins the panel to its trigger (`anchor-name` on the trigger, `position-anchor` + `anchor()` on the panel). Where anchor positioning is unsupported the panel centers — acceptable as a fallback, ship JS positioning if the menu is critical. Items are quiet full-width rows; a danger item uses the danger text/fill pair.*
+Any `[popover]` renders as a panel. Use the native `popovertarget` for open/close and light-dismiss, and CSS anchor positioning to pin it to its trigger (`anchor-name` on the trigger, `position-anchor` + `anchor()` on the panel). Where anchor positioning is unsupported the panel centers — acceptable as a fallback; wire JS positioning if the menu is critical. A danger item uses `variant="danger"`.
 ```html
-<button popovertarget="project-menu" style="anchor-name: --project-menu">Options</button>
-<menu id="project-menu" popover class="m-0 p-1 rounded-lg bg-neutral-950 border border-white/[0.16] shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
-  style="position-anchor: --project-menu; inset: auto; top: calc(anchor(bottom) + 4px); left: anchor(left);">
-  <button class="w-full justify-start px-3 py-1.5 rounded-md text-white/55 hover:text-white hover:bg-white/[0.04] transition-colors duration-200">Rename</button>
-  <button class="w-full justify-start px-3 py-1.5 rounded-md text-white/55 hover:text-white hover:bg-white/[0.04] transition-colors duration-200">Duplicate</button>
-  <hr class="my-1 mx-2 border-white/[0.06]" />
-  <button class="w-full justify-start px-3 py-1.5 rounded-md text-red-300/90 hover:text-red-200 hover:bg-red-500/[0.06] transition-colors duration-200">Delete</button>
+<button popovertarget="menu" style="anchor-name: --menu">Options</button>
+<menu id="menu" popover style="position-anchor: --menu; inset: auto; margin: 0; top: calc(anchor(bottom) + 4px); left: anchor(left); min-width: 11rem; list-style: none;">
+  <button>Rename</button>
+  <button>Duplicate</button>
+  <hr />
+  <button variant="danger">Delete</button>
 </menu>
 ```
 
 #### Tooltip
-*For clarifying icon-only or ambiguous controls — never for content that matters, since it's hover/focus-only. Micro panel, 11px text, appears after a ~300ms delay, hides immediately. In snowball.css it's a `data-tooltip` attribute on any element that doesn't already use its `::after` (not switches, checkboxes, radios, or the code-block copy button). The tooltip is not the accessible name — keep `aria-label` even when the tooltip repeats it.*
+A `data-tooltip` attribute on any element that doesn't already use its `::after` (not switches, checkboxes, radios, or the copy button). Appears after a ~300ms delay on hover/focus, hides immediately. For clarifying ambiguous controls only — never for content that matters, since it's hover/focus-only. It always opens upward and can't flip, so it may clip near the top or side edges of the viewport — another reason to keep the text short and the content non-essential. The tooltip is **not** the accessible name: keep `aria-label` even when the tooltip repeats it.
 ```html
-<button aria-label="Copy" data-tooltip="Copy to clipboard" class="relative …icon button classes…
-  after:content-[attr(data-tooltip)] after:absolute after:bottom-[calc(100%+0.5rem)] after:left-1/2 after:-translate-x-1/2
-  after:px-2 after:py-1 after:rounded after:bg-neutral-950 after:border after:border-white/[0.16]
-  after:text-[11px] after:font-medium after:text-white/80 after:whitespace-nowrap after:pointer-events-none
-  after:opacity-0 after:transition-opacity hover:after:opacity-100 hover:after:delay-300 focus-visible:after:opacity-100">…icon…</button>
+<button variant="icon" aria-label="Copy" data-tooltip="Copy to clipboard"> …icon… </button>
 ```
 
 #### Toast
-*Transient, non-blocking confirmation — bottom-right stack inside an `aria-live="polite"` container so screen readers announce additions. A 6px status dot is the only color: muted by default, the success / danger pair otherwise. Auto-dismiss after ~4s; fade out before removing.*
+Transient, non-blocking confirmation. A `<toaster aria-live="polite">` container holds a bottom-right stack; append `<toast>` elements (`<toast success>` / `<toast danger>` for a colored status dot, bare for neutral). Auto-dismiss after ~4s by setting the `closing` attribute, then removing the element ~200ms later — see the `toast()` helper in `components.html`.
 ```html
-<div aria-live="polite" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-  <div class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-md bg-neutral-950 text-[13px] text-white/80
-    border border-white/[0.16] shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
-    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400/90"></span>
-    Project saved
-  </div>
-</div>
+<toaster aria-live="polite">
+  <toast success>Project saved</toast>
+</toaster>
 ```
-*In snowball.css: `<toaster aria-live="polite">` holds the stack; append `<toast success|danger>message</toast>`, then set the `closing` attribute and remove the element ~200ms later.*
 
+---
 
-
-
-### Exceptions & Special Cases
+## Exceptions & Special Cases
 
 #### Very Impactful Text
-*For the most important, high-contrast hero titles or statements, you can use a custom combination of classes to create a striking visual effect. This is not a standard text style but can be used for special cases where you want to make a bold statement on the page.*
+For the most important hero statements, pair the page title with a de-emphasized continuation:
 ```html
-<h2 class="text-6xl sm:text-8xl md:text-9xl font-semibold tracking-tight text-white leading-[0.9]">Quietly making<br><span class="text-white/40">things that last.</span></h2>
-```
-
-#### Readable Project Title
-*For project titles that need to be readable at smaller sizes, you can use a combination of text size and opacity to ensure clarity while maintaining the design aesthetic.*
-```html
-<h2 class="text-4xl sm:text-5xl font-semibold tracking-tight text-white">Project 1</h2>
+<h2 class="page-title">Quietly making<br><span style="color: var(--sb-text-dim)">things that last.</span></h2>
 ```
 
 #### Descriptions for Large Titles
-*When you have a large title (like an H1 or Page Title) and want to provide a supporting description, you can use the Title Description style to create a clear hierarchy and maintain readability.*
+Use `.hero-desc` (larger and wider than `.title-desc`) to support an H1 or page title:
 ```html
-<p class="text-white/55 text-lg sm:text-xl leading-relaxed max-w-2xl">This is a subtitle that supports the main title, providing additional context or information.</p>
+<p class="hero-desc">This subtitle supports the main title, providing additional context.</p>
 ```
 
-#### When Using Shaders Or Other Visual Effects For The Background, The Text Should Stand Out
-*If your design includes a shader or a busy background, ensure that the text remains legible by using higher opacity for the text color and possibly adding a subtle text shadow for better contrast.*
+#### Text over shaders or busy backgrounds
+When the background is busy, keep text legible with full-opacity color and a subtle shadow:
 ```html
-<h1 style="color: rgb(255, 255, 255); text-shadow: rgba(0, 0, 0, 0.45) 0px 2px 24px; transition: color 600ms cubic-bezier(0.16, 1, 0.3, 1), text-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1);" class="text-6xl sm:text-7xl md:text-8xl font-semibold tracking-tight leading-[0.92]">Let's<br>talk.</h1>
+<h1 class="page-title" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45);">Let's<br>talk.</h1>
 ```
+
+---
+
+*Prefer inline utility classes? The `--sb-*` tokens above map cleanly onto a Tailwind theme if you'd rather generate the markup that way — but `snowball.css` is the canonical implementation, and the semantic API is what keeps the design rules unbreakable.*

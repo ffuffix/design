@@ -1,5 +1,5 @@
 /* ==========================================================================
-   🐇 Snowball 1.2.0 — component stylesheet
+   🐇 Snowball 1.3.0 — component stylesheet
    Standalone CSS implementation of design.md. No Tailwind required.
 
    Display-only components are custom tags:
@@ -78,7 +78,7 @@
   color-scheme: light dark;
 
   /* Text opacity steps */
-  --sb-text-micro:   light-dark(rgba(0, 0, 0, 0.40), rgba(255, 255, 255, 0.35));
+  --sb-text-micro:   light-dark(rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.50));  /* WCAG-AA floor for small text */
   --sb-text-dim:     light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.40));
   --sb-text-muted:   light-dark(rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.55));
   --sb-text-link:    light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.65));
@@ -358,17 +358,17 @@ button[role="switch"]::after {
   content: "";
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 1rem;
   height: 1rem;
   border-radius: var(--sb-radius-pill);
   background: var(--sb-text-muted);
   box-shadow: 0 2px 6px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.4));
-  transition: left 0.3s, background-color 0.3s;
+  transition: inset-inline-start 0.3s, background-color 0.3s;
 }
 button[role="switch"][aria-checked="true"] { background: var(--sb-solid-dim); }
 button[role="switch"][aria-checked="true"]::after {
-  left: 18px;
+  inset-inline-start: 18px;
   background: var(--sb-on-solid);
 }
 
@@ -493,13 +493,15 @@ button[role="radio"][aria-checked="true"]::after {
 :where(select) {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 2.25rem;
+  padding-inline-end: 2.25rem;
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 0.875rem;
 }
+/* Chevron rides the trailing edge — mirror it for RTL */
+:where(select):dir(rtl) { background-position: left 0.75rem center; }
 /* Native dropdown fallback — solid panel colors so the open list is
    readable in both themes (options don't inherit the translucent fills) */
 :where(select) option {
@@ -517,7 +519,7 @@ button[role="radio"][aria-checked="true"]::after {
   }
   :where(select) {
     background-image: none;
-    padding-right: 0.875rem;
+    padding-inline-end: 0.875rem;
   }
   :where(select)::picker-icon {
     color: var(--sb-text-dim);
@@ -556,7 +558,7 @@ button[role="radio"][aria-checked="true"]::after {
   :where(select) option::checkmark { display: none; }
 
   @media (prefers-reduced-motion: no-preference) {
-    :where(select)::picker-icon { transition: transform 0.2s; }
+    :where(select)::picker-icon { transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
     :where(select) option { transition: color 0.2s, background-color 0.2s; }
     /* Fade/slide the panel; discrete transitions animate it from display:none */
     :where(select)::picker(select) {
@@ -729,6 +731,30 @@ progressbar::after, progress-bar::after {
   transition: width 0.3s;
 }
 
+/* Skeleton — a shimmering placeholder for content that hasn't arrived. Unlike
+   most components it's meant to be sized to what it replaces (set width /
+   height / --radius); add [circle] for an avatar placeholder. -------------------- */
+skeleton, sb-skeleton {
+  display: block;
+  width: 100%;
+  height: 0.75rem;
+  border-radius: var(--radius, var(--sb-radius));
+  background-color: var(--sb-fill-track);
+  background-image: linear-gradient(90deg, transparent,
+    light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.07)), transparent);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: sb-shimmer 1.4s ease-in-out infinite;
+}
+skeleton[circle], sb-skeleton[circle] { border-radius: var(--sb-radius-pill); }
+
+/* Band starts fully off the left and ends fully off the right (both ends are
+   plain fill), so the loop wrap is invisible — a seamless left-to-right sweep */
+@keyframes sb-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
+}
+
 /* Tag / Badge ----------------------------------------------------------------- */
 tag, badge, sb-tag, sb-badge {
   display: inline-flex;
@@ -743,6 +769,45 @@ tag, badge, sb-tag, sb-badge {
   color: var(--sb-text-muted);
   background: var(--sb-fill-track);
 }
+
+/* Avatar ----------------------------------------------------------------------------
+   <avatar>AB</avatar> for initials, or <avatar><img …></avatar> for a photo.
+   Overlap several with <avatargroup>; the ring matches --sb-bg, so on a
+   non-page surface override it (e.g. style="--sb-bg: var(--sb-panel)"). */
+avatar, sb-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius, var(--sb-radius-pill));
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--sb-text-muted);
+  background: var(--sb-fill-track);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card);
+  user-select: none;
+  -webkit-user-select: none;
+}
+avatar[size="sm"], sb-avatar[size="sm"] { width: 1.75rem; height: 1.75rem; font-size: 10px; }
+avatar[size="lg"], sb-avatar[size="lg"] { width: 3rem;    height: 3rem;    font-size: 15px; }
+avatar > img, sb-avatar > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+avatargroup, sb-avatargroup { display: inline-flex; align-items: center; }
+avatargroup > avatar, avatargroup > sb-avatar,
+sb-avatargroup > avatar, sb-avatargroup > sb-avatar {
+  margin-inline-start: -0.625rem;
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card),
+              0 0 0 2px var(--sb-bg);
+}
+avatargroup > :first-child, sb-avatargroup > :first-child { margin-inline-start: 0; }
 
 /* Stat Card -------------------------------------------------------------------- */
 statcard, stat-card {
@@ -847,7 +912,7 @@ codeblock[lang]::before, code-block[lang]::before {
   content: attr(lang);
   position: absolute;
   top: 0.75rem;
-  right: 1rem;
+  inset-inline-end: 1rem;
   font-family: var(--sb-font);
   font-size: 10px;
   font-weight: 600;
@@ -859,13 +924,13 @@ codeblock[lang]::before, code-block[lang]::before {
   -webkit-user-select: none;
 }
 /* Lang label steps aside when a copy button shares the corner */
-:is(codeblock, code-block)[lang]:has(> button[copy])::before { right: 2.75rem; }
+:is(codeblock, code-block)[lang]:has(> button[copy])::before { inset-inline-end: 2.75rem; }
 
 /* Copy button — data-copied swaps the icon for the checkmark */
 :is(codeblock, code-block) > button[copy] {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem;
+  inset-inline-end: 0.5rem;
   width: 1.75rem;
   height: 1.75rem;
   padding: 0;
@@ -957,6 +1022,233 @@ codeblock[lang]::before, code-block[lang]::before {
   background: var(--sb-fill-track);
   color: var(--sb-text-strong);
 }
+
+/* Keyboard key — <kbd>⌘</kbd> <kbd>K</kbd>; a small keycap chip -------------------- */
+:where(kbd) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius, var(--sb-radius-control));
+  font-family: var(--sb-font);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--sb-text-strong);
+  background: var(--sb-fill-track);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line);
+}
+
+/* Table — native <table>; mark numeric columns with [num] to right-align them ------
+   Row separators are composed at the use site (--border × --sb-line-*), the
+   same hairline recipe the rest of the system uses. */
+:where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--sb-text-body);
+}
+:where(table caption) {
+  margin-bottom: 0.75rem;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: start;
+  color: var(--sb-text-micro);
+}
+:where(th, td) {
+  padding: 0.625rem 0.875rem;
+  text-align: start;
+  vertical-align: middle;
+}
+:where(th) {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: var(--sb-text-muted);
+  border-bottom: var(--border, var(--sb-border-width)) solid var(--sb-line);
+}
+:where(td) {
+  border-bottom: var(--border, var(--sb-border-width)) solid var(--sb-line-card);
+}
+:where(tbody tr:last-child td) { border-bottom: 0; }
+:where(th[num], td[num]) { text-align: end; font-variant-numeric: tabular-nums; }
+
+/* Accordion — native <details>/<summary>; a bordered surface with a chevron -------
+   that rotates on open. Zero JS. Put the disclosed body in a single element. */
+:where(details) {
+  border-radius: var(--radius, var(--sb-radius-card));
+  background: var(--sb-fill);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card);
+}
+:where(summary) {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sb-text);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  list-style: none;
+  border-radius: inherit;
+}
+:where(summary)::-webkit-details-marker { display: none; }
+:where(summary)::after {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-start: auto;
+  border-right: 2px solid var(--sb-text-muted);
+  border-bottom: 2px solid var(--sb-text-muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+:where(details[open]) > summary::after { transform: translateY(1px) rotate(-135deg); }
+:where(details[open]) > summary {
+  box-shadow: inset 0 calc(-1 * var(--border, var(--sb-border-width))) 0 0 var(--sb-line-card);
+}
+:where(details) > summary ~ * {
+  margin: 0;
+  padding: 0.875rem 1.125rem 1rem;
+  color: var(--sb-text-body);
+}
+
+/* Tabs — role="tablist" > button[role="tab"]; panels are role="tabpanel". The
+   active tab gets an underline. Roving tabindex + panel switching: components.html */
+:where([role="tablist"]) {
+  display: flex;
+  gap: 0.25rem;
+  box-shadow: inset 0 calc(-1 * var(--border, var(--sb-border-width))) 0 0 var(--sb-line-card);
+}
+button[role="tab"] {
+  padding: 0.625rem 0.875rem;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--sb-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+button[role="tab"]:hover {
+  color: var(--sb-text);
+  background: transparent;
+  box-shadow: none;
+}
+/* Neutralize the expanded hit halo — adjacent tabs sit too close, so the
+   halos would overlap and steal each other's clicks */
+button[role="tab"]::before { inset: 0; }
+button[role="tab"][aria-selected="true"] { color: var(--sb-text); }
+button[role="tab"][aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(-1 * var(--border, var(--sb-border-width)));
+  height: 2px;
+  background: var(--sb-text);
+}
+:where([role="tabpanel"]) { padding-top: 1.25rem; }
+
+/* Segmented control — a radiogroup styled as a pill of segments. Reuses the radio
+   roving-tabindex script; the round-dot radio look is overridden away here. */
+segmented, sb-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius, var(--sb-radius-button));
+  background: var(--sb-fill-track);
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line);
+}
+segmented > button[role="radio"], sb-segmented > button[role="radio"] {
+  width: auto;
+  height: auto;
+  padding: 0.3125rem 0.75rem;
+  border-radius: calc(var(--radius, var(--sb-radius-button)) - 2px);
+  background: transparent;
+  box-shadow: none;
+  color: var(--sb-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+segmented > button[role="radio"]::after, sb-segmented > button[role="radio"]::after { display: none; }
+segmented > button[role="radio"]::before, sb-segmented > button[role="radio"]::before { inset: 0; }
+segmented > button[role="radio"]:hover, sb-segmented > button[role="radio"]:hover {
+  color: var(--sb-text);
+  box-shadow: none;
+  transform: none;
+}
+segmented > button[role="radio"]:active, sb-segmented > button[role="radio"]:active { transform: none; }
+segmented > button[role="radio"][aria-checked="true"], sb-segmented > button[role="radio"][aria-checked="true"] {
+  color: var(--sb-text);
+  background: var(--sb-panel);
+  box-shadow: 0 1px 2px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4));
+}
+
+/* Breadcrumbs — <breadcrumbs> of <a>s inside <nav aria-label="Breadcrumb">.
+   Slash separators are generated; the current page carries aria-current="page". */
+breadcrumbs, sb-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--sb-text-muted);
+}
+breadcrumbs > *, sb-breadcrumbs > * {
+  color: var(--sb-text-muted);
+  text-decoration: none;
+}
+breadcrumbs > a:hover, sb-breadcrumbs > a:hover { color: var(--sb-text); }
+breadcrumbs > * + *::before, sb-breadcrumbs > * + *::before {
+  content: "/";
+  margin: 0 0.625rem;
+  color: var(--sb-text-dim);
+}
+breadcrumbs [aria-current="page"], sb-breadcrumbs [aria-current="page"] { color: var(--sb-text); }
+
+/* Alert / Callout — a persistent, in-flow message; the quieter, in-page sibling
+   of the transient <toast>. <alert success|danger> tints the leading dot (the
+   same paired slot the toast dot uses); bare is neutral. An optional
+   <alerttitle> gives it a heading line. ------------------------------------------- */
+alert, sb-alert {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.625rem;
+  align-items: start;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius, var(--sb-radius-card));
+  background: var(--sb-fill);
+  color: var(--sb-text-body);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  box-shadow: inset 0 0 0 var(--border, var(--sb-border-width)) var(--sb-line-card);
+}
+alert::before, sb-alert::before {
+  content: "";
+  grid-column: 1;
+  grid-row: 1;
+  width: 7px;
+  height: 7px;
+  margin-top: 0.4rem;
+  border-radius: var(--sb-radius-pill);
+  background: var(--sb-text-dim);
+}
+alert[success]::before, sb-alert[success]::before { background: var(--sb-success); }
+alert[danger]::before,  sb-alert[danger]::before  { background: var(--sb-danger); }
+alert > *, sb-alert > * { grid-column: 2; margin: 0; font-size: 0.875rem; line-height: 1.5; }
+alerttitle, alert-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sb-text);
+}
+alerttitle + *, alert-title + * { margin-top: 0.25rem; }
 
 /* Overlays --------------------------------------------------------------------
    One surface, four shapes: the --sb-panel floating panel with a strong
@@ -1068,7 +1360,7 @@ codeblock[lang]::before, code-block[lang]::before {
 toaster, sb-toaster {
   position: fixed;
   bottom: 1.5rem;
-  right: 1.5rem;
+  inset-inline-end: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1153,12 +1445,28 @@ toast[closing], sb-toast[closing] {
   background-size: 24px 24px;
 }
 
+/* Visually hidden, still announced — accessible names for icon-only controls,
+   status text for the spinner, etc. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Reduced motion — kill decorative transitions; keep the spinner rotating
    (it carries meaning) but drop the dash morph ------------------------------ */
 @media (prefers-reduced-motion: reduce) {
   button, button::before, button::after, button svg,
   a, .link,
   input, textarea, select,
+  summary, summary::after,
   progressbar::after, progress-bar::after {
     transition-duration: 0.01ms !important;
   }
@@ -1168,6 +1476,11 @@ toast[closing], sb-toast[closing] {
   input[type="range"]::-moz-range-thumb { transition-duration: 0.01ms !important; }
   loadingspinner::after, loading-spinner::after {
     animation: sb-spin 2s linear infinite;
+  }
+  /* Skeleton shimmer is purely decorative — drop it, leave a static fill */
+  skeleton, sb-skeleton {
+    animation: none;
+    background-image: none;
   }
 }
 

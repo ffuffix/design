@@ -23,12 +23,12 @@
 <body>
 
   <header>
-    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.2.0 · snowball.css</p>
+    <p class="micro-label" style="margin-bottom: 1.5rem;">Snowball · v1.3.0 · snowball.css</p>
     <h1>Components,<br>without the class soup.</h1>
     <p class="hero-desc" style="margin-top: 2rem;">
       Every component from <a href="design.md">design.md</a> as a semantic tag or a one-attribute
-      button. Compare with the Tailwind version in <a href="preview.html">preview.html</a> —
-      in the dark theme they should be visually identical.
+      button — the complete, standalone implementation. No framework, no build step; link
+      <a href="snowball.css">snowball.css</a> and write plain HTML.
     </p>
   </header>
 
@@ -89,24 +89,35 @@
         <span class="micro-label">Tag / Badge</span>
         <div class="row" style="gap: 0.75rem;">
           <tag>beta</tag>
-          <tag>v1.2.0</tag>
+          <tag>v1.3.0</tag>
           <tag>draft</tag>
         </div>
       </div>
 
       <div>
         <span class="micro-label">Progress Bar — 60%</span>
-        <progressbar style="--value: 60%" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></progressbar>
+        <progressbar style="--value: 60%" role="progressbar" aria-label="Upload progress" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></progressbar>
       </div>
 
       <div>
         <span class="micro-label">Loading Spinner — sm / default / lg / xl / custom 56px</span>
         <div class="row">
-          <loadingspinner size="sm"></loadingspinner>
-          <loadingspinner></loadingspinner>
-          <loadingspinner size="lg"></loadingspinner>
-          <loadingspinner size="xl"></loadingspinner>
-          <loadingspinner style="--size: 56px"></loadingspinner>
+          <loadingspinner size="sm" aria-hidden="true"></loadingspinner>
+          <loadingspinner role="status" aria-label="Loading"></loadingspinner>
+          <loadingspinner size="lg" aria-hidden="true"></loadingspinner>
+          <loadingspinner size="xl" aria-hidden="true"></loadingspinner>
+          <loadingspinner style="--size: 56px" aria-hidden="true"></loadingspinner>
+        </div>
+      </div>
+
+      <div aria-busy="true">
+        <span class="micro-label">Skeleton — sized to the content it replaces</span>
+        <div class="row" style="align-items: center; gap: 1rem;">
+          <skeleton circle style="width: 2.75rem; height: 2.75rem;" aria-hidden="true"></skeleton>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 18rem;">
+            <skeleton style="width: 70%;" aria-hidden="true"></skeleton>
+            <skeleton aria-hidden="true"></skeleton>
+          </div>
         </div>
       </div>
     </div>
@@ -234,6 +245,137 @@
 <pre><code><span class="token deleted">- statusColor: 'blue'</span>
 <span class="token inserted">+ statusColor: 'emerald'</span></code></pre>
     </codeblock>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Data display</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;table&gt;</code>, <code>&lt;avatar&gt;</code> / <code>&lt;avatargroup&gt;</code>, and <code>&lt;kbd&gt;</code>.
+    </p>
+    <div class="stack">
+      <div>
+        <span class="micro-label">Table — <code>num</code> right-aligns numeric columns</span>
+        <table style="max-width: 36rem;">
+          <caption>Recent deployments</caption>
+          <thead>
+            <tr><th>Project</th><th>Status</th><th num>Duration</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>snowball</td><td>Live</td><td num>1.2s</td></tr>
+            <tr><td>preview</td><td>Building</td><td num>0.8s</td></tr>
+            <tr><td>banner</td><td>Live</td><td num>2.4s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <span class="micro-label">Avatar — sm / default / lg</span>
+        <div class="row">
+          <avatar size="sm" aria-label="Ada Lovelace">AL</avatar>
+          <avatar aria-label="Grace Hopper">GH</avatar>
+          <avatar size="lg" aria-label="Alan Turing">AT</avatar>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Avatar group — overlapping stack</span>
+        <avatargroup>
+          <avatar aria-label="Ada Lovelace">AL</avatar>
+          <avatar aria-label="Grace Hopper">GH</avatar>
+          <avatar aria-label="Alan Turing">AT</avatar>
+          <avatar aria-label="Katherine Johnson">KJ</avatar>
+        </avatargroup>
+      </div>
+      <div>
+        <span class="micro-label">Keyboard key</span>
+        <div class="row" style="gap: 0.75rem;">
+          <span><kbd>⌘</kbd> <kbd>K</kbd></span>
+          <span><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd></span>
+          <span><kbd>Esc</kbd></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Navigation &amp; disclosure</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      Tabs, a segmented control, a <code>&lt;details&gt;</code> accordion, and <code>&lt;breadcrumbs&gt;</code>.
+    </p>
+    <div class="stack">
+      <div>
+        <span class="micro-label">Breadcrumbs — current page carries <code>aria-current</code></span>
+        <nav aria-label="Breadcrumb">
+          <breadcrumbs>
+            <a href="#">Home</a>
+            <a href="#">Projects</a>
+            <span aria-current="page">Snowball</span>
+          </breadcrumbs>
+        </nav>
+      </div>
+      <div>
+        <span class="micro-label">Segmented control — a radiogroup; arrow keys switch</span>
+        <segmented role="radiogroup" aria-label="View">
+          <button role="radio" aria-checked="true">Board</button>
+          <button role="radio" aria-checked="false" tabindex="-1">List</button>
+          <button role="radio" aria-checked="false" tabindex="-1">Timeline</button>
+        </segmented>
+      </div>
+      <div>
+        <span class="micro-label">Tabs — one tab stop, arrow keys move selection</span>
+        <div role="tablist" aria-label="Project">
+          <button role="tab" id="t-overview" aria-controls="p-overview" aria-selected="true">Overview</button>
+          <button role="tab" id="t-activity" aria-controls="p-activity" aria-selected="false" tabindex="-1">Activity</button>
+          <button role="tab" id="t-settings" aria-controls="p-settings" aria-selected="false" tabindex="-1">Settings</button>
+        </div>
+        <div role="tabpanel" id="p-overview" aria-labelledby="t-overview">
+          <p class="muted-desc">Overview — the project at a glance.</p>
+        </div>
+        <div role="tabpanel" id="p-activity" aria-labelledby="t-activity" hidden>
+          <p class="muted-desc">Activity — a log of recent changes.</p>
+        </div>
+        <div role="tabpanel" id="p-settings" aria-labelledby="t-settings" hidden>
+          <p class="muted-desc">Settings — configuration for this project.</p>
+        </div>
+      </div>
+      <div>
+        <span class="micro-label">Accordion — native <code>&lt;details&gt;</code>, zero JS</span>
+        <div class="stack" style="gap: 0.75rem; max-width: 36rem;">
+          <details open>
+            <summary>What's included?</summary>
+            <p class="muted-desc">Every component, both themes, and the reference interactivity snippets in this page's script.</p>
+          </details>
+          <details>
+            <summary>Does it need a build step?</summary>
+            <p class="muted-desc">No — link <code>snowball.css</code> and write semantic HTML.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <section>
+    <h2 style="margin-bottom: 0.5rem;">Feedback</h2>
+    <p class="title-desc" style="margin-bottom: 3rem;">
+      <code>&lt;alert&gt;</code> — a persistent, in-flow message; <code>success</code> / <code>danger</code> / neutral.
+    </p>
+    <div class="stack" style="gap: 1rem; max-width: 36rem;">
+      <alert>
+        <alerttitle>Heads up</alerttitle>
+        <p>Your trial ends in three days. Upgrade any time from settings.</p>
+      </alert>
+      <alert success>
+        <p>Changes saved.</p>
+      </alert>
+      <alert danger>
+        <alerttitle>Couldn't save</alerttitle>
+        <p>Check your connection and try again.</p>
+      </alert>
+    </div>
   </section>
 
   <hr />
@@ -391,6 +533,34 @@
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % radios.length;
         if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   j = (i - 1 + radios.length) % radios.length;
         if (j !== null) { e.preventDefault(); select(radios[j]); }
+      });
+    });
+
+    // Tabs: one tab stop per tablist. Click or Arrow/Home/End select a tab,
+    // reveal its panel (aria-controls → panel id) and hide the others.
+    document.querySelectorAll('[role="tablist"]').forEach(list => {
+      const tabs = [...list.querySelectorAll('[role="tab"]')];
+      const select = (tab, focus = true) => {
+        tabs.forEach(t => {
+          const on = t === tab;
+          t.setAttribute('aria-selected', on);
+          t.tabIndex = on ? 0 : -1;
+          const panel = document.getElementById(t.getAttribute('aria-controls'));
+          if (panel) panel.hidden = !on;
+        });
+        if (focus) tab.focus();
+      };
+      tabs.forEach(t => { t.tabIndex = t.getAttribute('aria-selected') === 'true' ? 0 : -1; });
+      tabs.forEach(tab => tab.addEventListener('click', () => select(tab)));
+      list.addEventListener('keydown', e => {
+        const i = tabs.indexOf(document.activeElement);
+        if (i < 0) return;
+        let j = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   j = (i - 1 + tabs.length) % tabs.length;
+        if (e.key === 'Home') j = 0;
+        if (e.key === 'End')  j = tabs.length - 1;
+        if (j !== null) { e.preventDefault(); select(tabs[j]); }
       });
     });
 

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   🐇 Snowball 1.2.0 — user configuration
+   🐇 Snowball 1.3.0 — user configuration
    Load AFTER snowball.css:
 
      <link rel="stylesheet" href="snowball.css" />
@@ -75,7 +75,7 @@
   /* ------------------------------------------------------------------------
      Text opacity steps
      ------------------------------------------------------------------------ */
-  /* --sb-text-micro:  light-dark(rgba(0, 0, 0, 0.40), rgba(255, 255, 255, 0.35)); */
+  /* --sb-text-micro:  light-dark(rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.50)); */
   /* --sb-text-dim:    light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.40)); */
   /* --sb-text-muted:  light-dark(rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.55)); */
   /* --sb-text-link:   light-dark(rgba(0, 0, 0, 0.65), rgba(255, 255, 255, 0.65)); */

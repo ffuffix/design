@@ -564,8 +564,6 @@ button[role="radio"][aria-checked="true"]::after {
     :where(select)::picker(select) {
       opacity: 0;
       transform: translateY(-4px);
-        transition: opacity 0.15s, transform 0.15s,
-        display 0.15s allow-discrete;
       transition: opacity 0.15s, transform 0.15s,
         display 0.15s allow-discrete, overlay 0.15s allow-discrete;
     }
@@ -1260,10 +1258,6 @@ alerttitle + *, alert-title + * { margin-top: 0.25rem; }
 
 /* Dialog — native <dialog>, opened with showModal() */
 :where(dialog) {
-  /* Prevent jump when closing in browsers lacking overlay transition */
-  position: fixed;
-  inset: 0;
-  margin: auto;
   width: fit-content;
   min-width: 16rem;
   max-width: min(28rem, calc(100vw - 2.5rem));
@@ -1407,9 +1401,7 @@ toast[closing], sb-toast[closing] {
   :where(dialog) {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
-      transition: opacity 0.2s, transform 0.2s,
-      display 0.2s allow-discrete;
-      transition: opacity 0.2s, transform 0.2s,
+    transition: opacity 0.2s, transform 0.2s,
       display 0.2s allow-discrete, overlay 0.2s allow-discrete;
   }
   :where(dialog[open]) { opacity: 1; transform: none; }
@@ -1419,7 +1411,7 @@ toast[closing], sb-toast[closing] {
   :where(dialog)::backdrop {
     opacity: 0;
     transition: opacity 0.2s, display 0.2s allow-discrete;
-    transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
+    transition: transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
   }
   :where(dialog[open])::backdrop { opacity: 1; }
   @starting-style {
@@ -1429,9 +1421,7 @@ toast[closing], sb-toast[closing] {
   :where([popover]) {
     opacity: 0;
     transform: translateY(-4px);
-      transition: opacity 0.15s, transform 0.15s,
-      display 0.15s allow-discrete;
-      transition: opacity 0.15s, transform 0.15s,
+    transition: opacity 0.15s, transform 0.15s,
       display 0.15s allow-discrete, overlay 0.15s allow-discrete;
   }
   :where(:popover-open) { opacity: 1; transform: none; }

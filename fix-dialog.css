@@ -1,0 +1,6 @@
+:where(dialog) {
+  /* Prevent jump when closing in browsers lacking overlay transition */
+  position: fixed;
+  inset: 0;
+  margin: auto;
+}

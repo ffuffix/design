@@ -565,6 +565,8 @@ button[role="radio"][aria-checked="true"]::after {
       opacity: 0;
       transform: translateY(-4px);
       transition: opacity 0.15s, transform 0.15s,
+        display 0.15s allow-discrete;
+      transition: opacity 0.15s, transform 0.15s,
         display 0.15s allow-discrete, overlay 0.15s allow-discrete;
     }
     :where(select):open::picker(select) {
@@ -1258,6 +1260,10 @@ alerttitle + *, alert-title + * { margin-top: 0.25rem; }
 
 /* Dialog — native <dialog>, opened with showModal() */
 :where(dialog) {
+  /* Prevent jump when closing in browsers lacking overlay transition */
+  position: fixed;
+  inset: 0;
+  margin: auto;
   width: fit-content;
   min-width: 16rem;
   max-width: min(28rem, calc(100vw - 2.5rem));
@@ -1402,6 +1408,8 @@ toast[closing], sb-toast[closing] {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
     transition: opacity 0.2s, transform 0.2s,
+      display 0.2s allow-discrete;
+    transition: opacity 0.2s, transform 0.2s,
       display 0.2s allow-discrete, overlay 0.2s allow-discrete;
   }
   :where(dialog[open]) { opacity: 1; transform: none; }
@@ -1410,6 +1418,7 @@ toast[closing], sb-toast[closing] {
   }
   :where(dialog)::backdrop {
     opacity: 0;
+    transition: opacity 0.2s, display 0.2s allow-discrete;
     transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
   }
   :where(dialog[open])::backdrop { opacity: 1; }
@@ -1420,6 +1429,8 @@ toast[closing], sb-toast[closing] {
   :where([popover]) {
     opacity: 0;
     transform: translateY(-4px);
+    transition: opacity 0.15s, transform 0.15s,
+      display 0.15s allow-discrete;
     transition: opacity 0.15s, transform 0.15s,
       display 0.15s allow-discrete, overlay 0.15s allow-discrete;
   }
